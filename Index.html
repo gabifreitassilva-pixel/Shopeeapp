@@ -2,8 +2,15 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Postagens Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f97316">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Manager Pro</title>
+    
+    <!-- Link para o arquivo de Manifesto PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/f97316/ffffff?text=MP">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -49,7 +56,7 @@
             </h1>
         </header>
 
-        <!-- Área de Upload (Estilo Botão Tracejado) -->
+        <!-- Área de Upload -->
         <div class="relative border-2 border-dashed border-orange-300 rounded-xl bg-orange-50 p-4 mb-6 text-center hover:bg-orange-100 transition-colors cursor-pointer" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden">
             <div class="flex items-center justify-center gap-2 text-orange-600 font-bold text-lg">
@@ -99,8 +106,7 @@
 
     </div>
 
-    
-    <!-- Toast Notification (Mensagem de Copiado) -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full font-medium text-sm shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50 flex items-center gap-2">
         <i class="ph-fill ph-check-circle text-green-400 text-lg"></i>
         <span>Copiado com sucesso!</span>
@@ -109,19 +115,16 @@
     <script>
         const fileInput = document.getElementById('fileInput');
         const productList = document.getElementById('productList');
-        const emptyState = document.getElementById('emptyState');
         const loadingIndicator = document.getElementById('loadingIndicator');
         const toast = document.getElementById('toast');
         
         let allProducts = [];
-        let postedProducts = new Set(); // Guarda os IDs dos produtos postados
+        let postedProducts = new Set();
         let currentTab = 'pendentes';
 
-        // Função inteligente para processar os dados puros (ignora linhas de lixo no topo da planilha)
         function processRawData(rawData) {
             let headerRowIndex = 0;
             
-            // 1. Procura a linha que contém os cabeçalhos verdadeiros
             for (let i = 0; i < Math.min(10, rawData.length); i++) {
                 if(!rawData[i]) continue;
                 const rowString = rawData[i].join(' ').toLowerCase();
@@ -134,13 +137,9 @@
             const headers = rawData[headerRowIndex];
             const processedData = [];
             
-            // 2. Monta os objetos apenas com as linhas corretas de produtos
             for (let i = headerRowIndex + 1; i < rawData.length; i++) {
                 const row = rawData[i];
-                if (!row) continue;
-                
-                // Ignora linhas totalmente vazias
-                if (row.join('').trim() === '') continue;
+                if (!row || row.join('').trim() === '') continue;
                 
                 const obj = {};
                 headers.forEach((header, index) => {
@@ -158,22 +157,19 @@
 
             productList.innerHTML = '';
             loadingIndicator.classList.remove('hidden');
-            postedProducts.clear(); // Zera os postados ao colocar planilha nova
-            currentTab = 'pendentes'; // Volta pra aba de pendentes
+            postedProducts.clear();
+            currentTab = 'pendentes';
             
-            // Atualiza botões da aba
             const buttons = document.querySelectorAll('.flex > button');
             buttons[0].className = 'flex-1 py-2 text-sm rounded-md tab-active transition-all';
             buttons[1].className = 'flex-1 py-2 text-sm rounded-md tab-inactive transition-all';
 
             if (file.name.toLowerCase().endsWith('.csv')) {
-                // PapaParse configurado para ler como matriz bruta (header: false) para evitar quebra de colunas
                 Papa.parse(file, {
                     header: false, 
                     skipEmptyLines: true,
                     complete: function(results) {
                         allProducts = processRawData(results.data);
-                        // Adiciona um ID único para cada produto para a gente poder rastrear
                         allProducts = allProducts.map((p, index) => ({...p, _id: index}));
                         
                         setTimeout(() => {
@@ -182,7 +178,7 @@
                             renderProducts();
                         }, 500);
                     },
-                    error: function(error) {
+                    error: function() {
                         loadingIndicator.classList.add('hidden');
                         alert("Erro ao ler o arquivo CSV.");
                     }
@@ -196,10 +192,8 @@
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
                         
-                        // Lemos o Excel como matriz (header: 1) para usar a mesma inteligência do CSV
                         const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
                         allProducts = processRawData(rawData);
-                        // Adiciona um ID único para cada produto para a gente poder rastrear
                         allProducts = allProducts.map((p, index) => ({...p, _id: index}));
 
                         setTimeout(() => {
@@ -230,7 +224,6 @@
             postedProducts.add(id);
             updateStats();
             if (currentTab === 'pendentes') {
-                // Efeito visual de sumir da aba pendentes
                 const card = document.getElementById(`product-card-${id}`);
                 if (card) {
                     card.style.opacity = '0';
@@ -249,7 +242,6 @@
              postedProducts.delete(id);
              updateStats();
              if(currentTab === 'postados') {
-                  // Efeito visual de sumir da aba postados (voltando pra pendentes)
                   const card = document.getElementById(`product-card-${id}`);
                   if (card) {
                       card.style.opacity = '0';
@@ -263,11 +255,8 @@
         }
         
         function togglePostStatus(id, checkbox) {
-             if(checkbox.checked) {
-                 markAsPosted(id);
-             } else {
-                 unmarkAsPosted(id);
-             }
+             if(checkbox.checked) markAsPosted(id);
+             else unmarkAsPosted(id);
         }
 
         function checkEmptyState() {
@@ -285,7 +274,6 @@
         function renderProducts() {
             productList.innerHTML = '';
             
-            // Filtra os produtos dependendo da aba que estamos
             const productsToShow = allProducts.filter(p => {
                 if (currentTab === 'pendentes') return !postedProducts.has(p._id);
                 if (currentTab === 'postados') return postedProducts.has(p._id);
@@ -299,21 +287,16 @@
 
             productsToShow.forEach((product, index) => {
                 
-                // Mapeamento ultra-restrito (agora usamos palavras de exclusão como "shop" para não pegar a loja)
                 let titulo = getBestMatch(product, ['Product Name', 'Nome do Produto', 'titulo', 'name'], ['shop', 'loja']) || 'Produto sem título';
                 let link = getBestMatch(product, ['Short Link', 'Link Curto', 'Product Link', 'Link do Produto'], ['image', 'imagem', 'foto', 'shop']) || '';
                 
-                // Remove aspas sobrando no título
                 titulo = titulo.replace(/^"|"$/g, '').trim();
 
-                // LÓGICA DO MODELO ORIGINAL: Encurtar o título se for muito grande
                 let tituloAbreviado = titulo;
                 if (titulo.length > 80) {
-                    // Corta no caractere 80 e adiciona as reticências
                     tituloAbreviado = titulo.substring(0, 80).trim() + "...";
                 }
 
-                // Fallback se a coluna de link tiver outro nome, pega a primeira URL que não seja de imagem
                 if(link === '') {
                    for (const key in product) {
                        if (typeof product[key] === 'string' && product[key].startsWith('http') && !product[key].toLowerCase().includes('image')) {
@@ -323,16 +306,12 @@
                    }
                 }
 
-                // LÓGICA DO MODELO ORIGINAL: Gerar Hashtags baseadas no título
-                // Pega as palavras, remove acentos/símbolos, filtra palavras maiores que 3 letras, pega as 5 primeiras e põe '#'
                 let words = titulo.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toLowerCase().split(/\s+/);
                 let hashtagsArray = words.filter(word => word.length > 3).slice(0, 5).map(word => '#' + word);
-                hashtagsArray.push('#shopee'); // Adiciona shopee no final
+                hashtagsArray.push('#shopee');
                 let hashtags = hashtagsArray.join(' ');
                 
                 const isPosted = postedProducts.has(product._id);
-
-                // Montagem do texto final do post idêntico ao original
                 const postText = `✨ ${tituloAbreviado}\n\n🔗 ${link}\n\n${hashtags}`;
                 const safePostText = postText.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n');
                 const charCount = postText.length;
@@ -375,18 +354,13 @@
             });
         }
 
-        // Função de busca inteligente com palavras proibidas (excludeWords)
         function getBestMatch(obj, possibleKeys, excludeWords = []) {
             const keys = Object.keys(obj);
-            
-            // 1. Tenta achar o nome exato da coluna
             for (let i = 0; i < possibleKeys.length; i++) {
                 const searchKey = possibleKeys[i].toLowerCase();
                 const exactMatch = keys.find(k => k.toLowerCase() === searchKey);
                 if (exactMatch && obj[exactMatch] && obj[exactMatch] !== '') return obj[exactMatch];
             }
-            
-            // 2. Tenta achar partes do nome (ex: acha "Product Name" pesquisando "name")
             for (let i = 0; i < possibleKeys.length; i++) {
                 const searchKey = possibleKeys[i].toLowerCase();
                 const partialMatch = keys.find(k => {
@@ -404,7 +378,6 @@
             const decodedText = text.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\n/g, '\n');
             navigator.clipboard.writeText(decodedText).then(() => {
                 showToast();
-                // Marca como postado e some da tela se houver ID
                 if(id !== undefined) markAsPosted(id);
             }).catch(err => {
                 const textArea = document.createElement("textarea");
@@ -451,6 +424,19 @@
                 buttons[1].className = 'flex-1 py-2 text-sm rounded-md tab-active transition-all';
             }
             renderProducts();
+        }
+
+        // --- ATIVADOR DO APLICATIVO PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('App instalado com sucesso no escopo: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('Falha ao instalar o App: ', err);
+                });
+            });
         }
     </script>
 </body>
