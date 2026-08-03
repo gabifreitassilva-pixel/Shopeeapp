@@ -1,7 +1,7 @@
 const CACHE_NAME = 'manager-pro-cache-v1';
 const urlsToCache = [
-  './Index.html',
-  './Manifest.json'
+  './index.html',
+  './manifest.json'
 ];
 
 // Instala o motor no celular e salva os arquivos iniciais
