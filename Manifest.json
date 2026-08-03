@@ -2,7 +2,7 @@
 "name": "Shopee Manager Pro",
 "short_name": "Manager Pro",
 "description": "Gerenciador inteligente de postagens de afiliados.",
-"start_url": "./index.html",
+"start_url": "./Index.html",
 "display": "standalone",
 "background_color": "#f3f4f6",
 "theme_color": "#f97316",
