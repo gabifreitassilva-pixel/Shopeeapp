@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Postagens Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- XLSX para ler planilhas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PapaParse para ler CSVs perfeitamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Phosphor Icons (Ícones modernos) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        
+        .card-enter {
+            animation: slideUp 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Esconde a barra de rolagem na caixa de texto do post */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Estilo para abas ativas/inativas */
+        .tab-active { background-color: white; color: #f97316; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .tab-inactive { background-color: transparent; color: #6b7280; font-weight: 500; }
+        .tab-inactive:hover { color: #374151; }
+    </style>
+</head>
+
+<body class="text-slate-800 pb-20">
+
+    <div class="max-w-2xl mx-auto pt-6 px-4">
+        
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-2xl font-extrabold text-slate-800 flex items-center justify-center gap-2">
+                Manager Pro <i class="ph-fill ph-rocket text-orange-500"></i>
+            </h1>
+        </header>
+
+        <!-- Área de Upload (Estilo Botão Tracejado) -->
+        <div class="relative border-2 border-dashed border-orange-300 rounded-xl bg-orange-50 p-4 mb-6 text-center hover:bg-orange-100 transition-colors cursor-pointer" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden">
+            <div class="flex items-center justify-center gap-2 text-orange-600 font-bold text-lg">
+                <i class="ph-fill ph-folder-open text-2xl"></i>
+                ADICIONAR PLANILHAS
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-white rounded-xl shadow-sm p-3 text-center border border-slate-100">
+                <div class="text-2xl font-bold text-orange-500" id="statTotal">0</div>
+                <div class="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">Total</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-3 text-center border border-slate-100">
+                <div class="text-2xl font-bold text-orange-500" id="statPending">0</div>
+                <div class="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">Pendentes</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-3 text-center border border-slate-100">
+                <div class="text-2xl font-bold text-green-500" id="statPosted">0</div>
+                <div class="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">Postados</div>
+            </div>
+        </div>
+
+        <div class="flex bg-slate-200 rounded-lg p-1 mb-6">
+            <button class="flex-1 py-2 text-sm rounded-md tab-active transition-all" onclick="switchTab('pendentes')">
+                PENDENTES
+            </button>
+            <button class="flex-1 py-2 text-sm rounded-md tab-inactive transition-all" onclick="switchTab('postados')">
+                POSTADOS
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingIndicator" class="hidden text-center py-8">
+            <i class="ph ph-spinner animate-spin text-3xl text-orange-500 mx-auto"></i>
+            <p class="mt-2 text-slate-500 text-sm font-medium">Lendo planilha...</p>
+        </div>
+
+        <div id="productList" class="space-y-4">
+            <!-- Estado Inicial -->
+            <div id="emptyState" class="text-center py-12 bg-white rounded-xl border border-slate-100 shadow-sm">
+                <i class="ph ph-list-dashes text-4xl text-slate-300 mb-3 block"></i>
+                <p class="text-slate-500 font-medium">Nenhum produto carregado.</p>
+                <p class="text-slate-400 text-sm mt-1">Adicione uma planilha para começar.</p>
+            </div>
+        </div>
+
+    </div>
+
+    
+    <!-- Toast Notification (Mensagem de Copiado) -->
+    <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full font-medium text-sm shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50 flex items-center gap-2">
+        <i class="ph-fill ph-check-circle text-green-400 text-lg"></i>
+        <span>Copiado com sucesso!</span>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const productList = document.getElementById('productList');
+        const emptyState = document.getElementById('emptyState');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const toast = document.getElementById('toast');
+        
+        let allProducts = [];
+        let postedProducts = new Set(); // Guarda os IDs dos produtos postados
+        let currentTab = 'pendentes';
+
+        // Função inteligente para processar os dados puros (ignora linhas de lixo no topo da planilha)
+        function processRawData(rawData) {
+            let headerRowIndex = 0;
+            
+            // 1. Procura a linha que contém os cabeçalhos verdadeiros
+            for (let i = 0; i < Math.min(10, rawData.length); i++) {
+                if(!rawData[i]) continue;
+                const rowString = rawData[i].join(' ').toLowerCase();
+                if (rowString.includes('product name') || rowString.includes('short link') || rowString.includes('nome do produto')) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+
+            const headers = rawData[headerRowIndex];
+            const processedData = [];
+            
+            // 2. Monta os objetos apenas com as linhas corretas de produtos
+            for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+                const row = rawData[i];
+                if (!row) continue;
+                
+                // Ignora linhas totalmente vazias
+                if (row.join('').trim() === '') continue;
+                
+                const obj = {};
+                headers.forEach((header, index) => {
+                    const cleanHeader = (header || `coluna_${index}`).toString().trim();
+                    obj[cleanHeader] = row[index] ? row[index].toString().trim() : '';
+                });
+                processedData.push(obj);
+            }
+            return processedData;
+        }
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            productList.innerHTML = '';
+            loadingIndicator.classList.remove('hidden');
+            postedProducts.clear(); // Zera os postados ao colocar planilha nova
+            currentTab = 'pendentes'; // Volta pra aba de pendentes
+            
+            // Atualiza botões da aba
+            const buttons = document.querySelectorAll('.flex > button');
+            buttons[0].className = 'flex-1 py-2 text-sm rounded-md tab-active transition-all';
+            buttons[1].className = 'flex-1 py-2 text-sm rounded-md tab-inactive transition-all';
+
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                // PapaParse configurado para ler como matriz bruta (header: false) para evitar quebra de colunas
+                Papa.parse(file, {
+                    header: false, 
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        allProducts = processRawData(results.data);
+                        // Adiciona um ID único para cada produto para a gente poder rastrear
+                        allProducts = allProducts.map((p, index) => ({...p, _id: index}));
+                        
+                        setTimeout(() => {
+                            loadingIndicator.classList.add('hidden');
+                            updateStats();
+                            renderProducts();
+                        }, 500);
+                    },
+                    error: function(error) {
+                        loadingIndicator.classList.add('hidden');
+                        alert("Erro ao ler o arquivo CSV.");
+                    }
+                });
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // Lemos o Excel como matriz (header: 1) para usar a mesma inteligência do CSV
+                        const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+                        allProducts = processRawData(rawData);
+                        // Adiciona um ID único para cada produto para a gente poder rastrear
+                        allProducts = allProducts.map((p, index) => ({...p, _id: index}));
+
+                        setTimeout(() => {
+                            loadingIndicator.classList.add('hidden');
+                            updateStats();
+                            renderProducts();
+                        }, 500);
+                    } catch (error) {
+                        loadingIndicator.classList.add('hidden');
+                        alert("Erro ao ler a planilha Excel.");
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        function updateStats() {
+            const total = allProducts.length;
+            const posted = postedProducts.size;
+            const pending = total - posted;
+            
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statPending').innerText = pending;
+            document.getElementById('statPosted').innerText = posted;
+        }
+
+        function markAsPosted(id) {
+            postedProducts.add(id);
+            updateStats();
+            if (currentTab === 'pendentes') {
+                // Efeito visual de sumir da aba pendentes
+                const card = document.getElementById(`product-card-${id}`);
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        card.remove();
+                        checkEmptyState();
+                    }, 300);
+                }
+            } else {
+                 renderProducts();
+            }
+        }
+        
+        function unmarkAsPosted(id) {
+             postedProducts.delete(id);
+             updateStats();
+             if(currentTab === 'postados') {
+                  // Efeito visual de sumir da aba postados (voltando pra pendentes)
+                  const card = document.getElementById(`product-card-${id}`);
+                  if (card) {
+                      card.style.opacity = '0';
+                      card.style.transform = 'translateY(10px)';
+                      setTimeout(() => {
+                          card.remove();
+                          checkEmptyState();
+                      }, 300);
+                  }
+             }
+        }
+        
+        function togglePostStatus(id, checkbox) {
+             if(checkbox.checked) {
+                 markAsPosted(id);
+             } else {
+                 unmarkAsPosted(id);
+             }
+        }
+
+        function checkEmptyState() {
+            const visibleCards = productList.querySelectorAll('.card-enter').length;
+            if (visibleCards === 0) {
+                 const message = currentTab === 'pendentes' ? 'Nenhum produto pendente.' : 'Nenhum produto postado ainda.';
+                 productList.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-xl border border-slate-100 shadow-sm">
+                        <i class="ph ph-list-dashes text-4xl text-slate-300 mb-3 block"></i>
+                        <p class="text-slate-500 font-medium">${message}</p>
+                    </div>`;
+            }
+        }
+
+        function renderProducts() {
+            productList.innerHTML = '';
+            
+            // Filtra os produtos dependendo da aba que estamos
+            const productsToShow = allProducts.filter(p => {
+                if (currentTab === 'pendentes') return !postedProducts.has(p._id);
+                if (currentTab === 'postados') return postedProducts.has(p._id);
+                return true;
+            });
+
+            if (productsToShow.length === 0) {
+                checkEmptyState();
+                return;
+            }
+
+            productsToShow.forEach((product, index) => {
+                
+                // Mapeamento ultra-restrito (agora usamos palavras de exclusão como "shop" para não pegar a loja)
+                let titulo = getBestMatch(product, ['Product Name', 'Nome do Produto', 'titulo', 'name'], ['shop', 'loja']) || 'Produto sem título';
+                let link = getBestMatch(product, ['Short Link', 'Link Curto', 'Product Link', 'Link do Produto'], ['image', 'imagem', 'foto', 'shop']) || '';
+                
+                // Remove aspas sobrando no título
+                titulo = titulo.replace(/^"|"$/g, '').trim();
+
+                // LÓGICA DO MODELO ORIGINAL: Encurtar o título se for muito grande
+                let tituloAbreviado = titulo;
+                if (titulo.length > 80) {
+                    // Corta no caractere 80 e adiciona as reticências
+                    tituloAbreviado = titulo.substring(0, 80).trim() + "...";
+                }
+
+                // Fallback se a coluna de link tiver outro nome, pega a primeira URL que não seja de imagem
+                if(link === '') {
+                   for (const key in product) {
+                       if (typeof product[key] === 'string' && product[key].startsWith('http') && !product[key].toLowerCase().includes('image')) {
+                           link = product[key];
+                           break; 
+                       }
+                   }
+                }
+
+                // LÓGICA DO MODELO ORIGINAL: Gerar Hashtags baseadas no título
+                // Pega as palavras, remove acentos/símbolos, filtra palavras maiores que 3 letras, pega as 5 primeiras e põe '#'
+                let words = titulo.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').toLowerCase().split(/\s+/);
+                let hashtagsArray = words.filter(word => word.length > 3).slice(0, 5).map(word => '#' + word);
+                hashtagsArray.push('#shopee'); // Adiciona shopee no final
+                let hashtags = hashtagsArray.join(' ');
+                
+                const isPosted = postedProducts.has(product._id);
+
+                // Montagem do texto final do post idêntico ao original
+                const postText = `✨ ${tituloAbreviado}\n\n🔗 ${link}\n\n${hashtags}`;
+                const safePostText = postText.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n');
+                const charCount = postText.length;
+                const charColorClass = charCount > 500 ? 'text-red-500' : 'text-slate-400';
+
+                const card = document.createElement('div');
+                card.id = `product-card-${product._id}`;
+                card.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-enter relative transition-all duration-300';
+                card.style.animationDelay = `${index * 0.05}s`;
+
+                card.innerHTML = `
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${isPosted ? 'bg-green-500' : 'bg-orange-500'}"></div>
+                    <div class="p-5 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <input type="checkbox" onchange="togglePostStatus(${product._id}, this)" ${isPosted ? 'checked' : ''} class="w-5 h-5 rounded border-slate-300 text-orange-500 focus:ring-orange-500 cursor-pointer">
+                            <span class="text-sm font-bold ${isPosted ? 'text-green-600' : 'text-slate-700'} tracking-wide uppercase">${isPosted ? 'Postado' : 'Pendente'}</span>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-2 h-28 overflow-y-auto no-scrollbar relative group">
+                            <p class="text-sm text-slate-700 whitespace-pre-wrap">${postText}</p>
+                            <button onclick="copyToClipboard('${safePostText}', ${product._id})" class="absolute top-2 right-2 bg-white border border-slate-200 p-1.5 rounded-md shadow-sm text-slate-500 hover:text-slate-800 opacity-0 group-hover:opacity-100 transition-opacity" title="Copiar texto">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+                        <div class="text-right text-xs font-semibold ${charColorClass} mb-4">
+                            ${charCount}/500
+                        </div>
+                        <div class="space-y-2.5">
+                            <button onclick="copyToClipboard('${safePostText}', ${product._id})" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                <i class="ph-fill ph-clipboard-text text-xl"></i>
+                                COPIAR POST
+                            </button>
+                            <button onclick="openLink('${link}')" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                <i class="ph-fill ph-image text-xl"></i>
+                                PEGAR FOTOS
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productList.appendChild(card);
+            });
+        }
+
+        // Função de busca inteligente com palavras proibidas (excludeWords)
+        function getBestMatch(obj, possibleKeys, excludeWords = []) {
+            const keys = Object.keys(obj);
+            
+            // 1. Tenta achar o nome exato da coluna
+            for (let i = 0; i < possibleKeys.length; i++) {
+                const searchKey = possibleKeys[i].toLowerCase();
+                const exactMatch = keys.find(k => k.toLowerCase() === searchKey);
+                if (exactMatch && obj[exactMatch] && obj[exactMatch] !== '') return obj[exactMatch];
+            }
+            
+            // 2. Tenta achar partes do nome (ex: acha "Product Name" pesquisando "name")
+            for (let i = 0; i < possibleKeys.length; i++) {
+                const searchKey = possibleKeys[i].toLowerCase();
+                const partialMatch = keys.find(k => {
+                    const lowerK = k.toLowerCase();
+                    const hasExclude = excludeWords.some(exclude => lowerK.includes(exclude));
+                    if (hasExclude) return false;
+                    return lowerK.includes(searchKey);
+                });
+                if (partialMatch && obj[partialMatch] && obj[partialMatch] !== '') return obj[partialMatch];
+            }
+            return null;
+        }
+
+        function copyToClipboard(text, id) {
+            const decodedText = text.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\n/g, '\n');
+            navigator.clipboard.writeText(decodedText).then(() => {
+                showToast();
+                // Marca como postado e some da tela se houver ID
+                if(id !== undefined) markAsPosted(id);
+            }).catch(err => {
+                const textArea = document.createElement("textarea");
+                textArea.value = decodedText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast();
+                    if(id !== undefined) markAsPosted(id);
+                } catch (err) {
+                    alert("Falha ao copiar texto. Tente selecionar manualmente.");
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+
+        function showToast() {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, 0)';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, 16px)';
+            }, 2500);
+        }
+
+        function openLink(url) {
+            if (url && (url.startsWith('http') || url.startsWith('www'))) {
+                window.open(url, '_blank');
+            } else {
+                alert('O link do produto não foi identificado corretamente nesta linha.');
+            }
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            const buttons = document.querySelectorAll('.flex > button');
+            buttons.forEach(btn => {
+                btn.className = 'flex-1 py-2 text-sm rounded-md tab-inactive transition-all';
+            });
+            if(tabName === 'pendentes') {
+                buttons[0].className = 'flex-1 py-2 text-sm rounded-md tab-active transition-all';
+            } else {
+                buttons[1].className = 'flex-1 py-2 text-sm rounded-md tab-active transition-all';
+            }
+            renderProducts();
+        }
+    </script>
+</body>
+</html>
