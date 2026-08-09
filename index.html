@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversor de Planilha Shopee Afiliados</title>
 
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#ee4d2d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Shopee Afiliados">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/888/888857.png">
+    
+    <!-- Dynamic Manifest Link -->
+    <link rel="manifest" id="manifestLink">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -116,6 +126,10 @@
 
                 <!-- Global Action Controls -->
                 <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button id="btnInstallPwa" onclick="installPWA()" class="hidden px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all flex items-center gap-1.5 animate-pulse">
+                        <i class="fas fa-download"></i>
+                        <span>Instalar App</span>
+                    </button>
                     <button onclick="resetToSample()" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5">
                         <i class="fas fa-rotate-left"></i>
                         <span class="hidden sm:inline">Restaurar Exemplo</span>
@@ -360,27 +374,93 @@
     </main>
 
     <script>
-        // Default Sample Dataset
+        // SAMPLE DATA (Exemplo Padrão)
         const SAMPLE_DATA = [
-            { id: "23697300428", itemId: "23697300428", itemName: "Jogo de 6 Taças de Água / Vinho Diamond 300ml Transparente", price: "30,9", sales: "70mil+", shopName: "Pratitude Essencia", commissionRate: "3%", commission: "R$0,93", productLink: "https://shopee.com.br/product/23697300428", offerLink: "https://s.shopee.com.br/3qLumDEzwW", legenda: "🍷 Taças Diamond 300ml no link abaixo! 👇 #achadinhos #shopee #promocao #ofertas", posted: false },
-            { id: "58202299064", itemId: "58202299064", itemName: "Fatiador Profissional de Legumes e Frutas Ralador Multifuncional", price: "26,99", sales: "20mil+", shopName: "TXB TECH LTDA", commissionRate: "9%", commission: "R$2,43", productLink: "https://shopee.com.br/product/58202299064", offerLink: "https://s.shopee.com.br/3g2UZuFdHV", legenda: "🔪 Fatiador Multifuncional! Praticidade na cozinha com o link 👇 #shopee #achadinhos #oferta", posted: false },
-            { id: "48963035674", itemId: "48963035674", itemName: "Startools Kit Chave de Fenda e Philips com 6 Peças Aço Cromo Vanádio", price: "115,99", sales: "1mil+", shopName: "ACLS ECOMMERCE", commissionRate: "6%", commission: "R$6,96", productLink: "https://shopee.com.br/product/48963035674", offerLink: "https://s.shopee.com.br/3Vj4NbGGcU", legenda: "🛠️ Kit Chaves 6 Peças! Confira no link 👇 #shopee #ferramentas #achadinhos #promocao", posted: false },
-            { id: "21598324472", itemId: "21598324472", itemName: "Kit Manta Decorativa Para Sofá Com 2 Capas De Almofada Jacquard", price: "62,9", sales: "10mil+", shopName: "Luana Home", commissionRate: "16%", commission: "R$10,06", productLink: "https://shopee.com.br/product/21598324472", offerLink: "https://s.shopee.com.br/3LPeBIGtxT", legenda: "🛋️ Kit Manta p/ Sofá! Deixe sua sala linda no link 👇 #achadinhos #shopee #casadecorada", posted: false },
-            { id: "48852424107", itemId: "48852424107", itemName: "Jogo De Taças Diamond 300ml 6 Peças Vidro Transparente", price: "36,99", sales: "20mil+", shopName: "SELLNEEDS", commissionRate: "3%", commission: "R$1,11", productLink: "https://shopee.com.br/product/48852424107", offerLink: "https://s.shopee.com.br/3B6DyzHXIS", legenda: "🥂 Taças Diamond 6 Peças! Oferta no link abaixo! ✨ #shopee #achadinhos #promocao", posted: false },
-            { id: "42122939888", itemId: "42122939888", itemName: "Kit de 6 até 12 Potes de Vidro Herméticos Mantimentos Temperos", price: "62,9", sales: "20mil+", shopName: "Pratitude Essencia", commissionRate: "3%", commission: "R$1,89", productLink: "https://shopee.com.br/product/42122939888", offerLink: "https://s.shopee.com.br/30mnmgIAdR", legenda: "🫙 Potes Herméticos! Organize a cozinha com o link 👇 #shopee #achadinhos #organizacao", posted: false },
-            { id: "23993732975", itemId: "23993732975", itemName: "Chaleira Elétrica Inox 1.8 Litros 110v 220v Desligamento Automático", price: "42,9", sales: "30mil+", shopName: "Celebration Home", commissionRate: "8%", commission: "R$3,43", productLink: "https://shopee.com.br/product/23993732975", offerLink: "https://s.shopee.com.br/2qTNaNInyQ", legenda: "⚡ Chaleira Elétrica Inox! Água quente rápido no link! ☕ #shopee #achadinhos #ofertas", posted: false },
-            { id: "22197373105", itemId: "22197373105", itemName: "Lencol Micropercal 400 Fios Casal Queen King Com Elástico Solteiro", price: "34,5", sales: "80mil+", shopName: "CasaLauraEnxovais", commissionRate: "13%", commission: "R$4,49", productLink: "https://shopee.com.br/product/22197373105", offerLink: "https://s.shopee.com.br/2g9xO4JRJP", legenda: "🛏️ Lençol 400 Fios! Qualidade de hotel no link 👇 #shopee #achadinhos #camaemesa", posted: false },
-            { id: "51153073463", itemId: "51153073463", itemName: "Jogo 6 Copos Baixo Vidro Multiuso Suco Agua Refri 310ml", price: "26,95", sales: "30mil+", shopName: "Pratitude Essencia", commissionRate: "3%", commission: "R$0,81", productLink: "https://shopee.com.br/product/51153073463", offerLink: "https://s.shopee.com.br/5ArIMf9vEu", legenda: "🥤 Jogo 6 Copos de Vidro! Confira no link 👇 #shopee #achadinhos #utilidades #promocao", posted: false }
+            { id: "23697300428", itemId: "23697300428", itemName: "Jogo de 6 Taças de Água / Vinho Diamond 300ml Transparente", price: "30,9", sales: "70mil+", shopName: "Pratitude Essencia", commissionRate: "3%", commission: "R$0,93", productLink: "https://shopee.com.br/product/23697300428", offerLink: "https://s.shopee.com.br/3qLumDEzwW", legenda: "🍷 Taças Diamond 300ml incríveis! Garanta as suas no link 👇 #achadinhos #shopee #promocao", posted: false },
+            { id: "58202299064", itemId: "58202299064", itemName: "Fatiador Profissional de Legumes e Frutas Ralador Multifuncional", price: "26,99", sales: "20mil+", shopName: "TXB TECH LTDA", commissionRate: "9%", commission: "R$2,43", productLink: "https://shopee.com.br/product/58202299064", offerLink: "https://s.shopee.com.br/3g2UZuFdHV", legenda: "🔪 Fatiador Multifuncional Prático! Facilite no link abaixo 👇 #achadinhos #shopee #promocao", posted: false },
+            { id: "48963035674", itemId: "48963035674", itemName: "Startools Kit Chave de Fenda e Philips com 6 Peças Aço Cromo Vanádio", price: "115,99", sales: "1mil+", shopName: "ACLS ECOMMERCE", commissionRate: "6%", commission: "R$6,96", productLink: "https://shopee.com.br/product/48963035674", offerLink: "https://s.shopee.com.br/3Vj4NbGGcU", legenda: "🛠️ Kit Chaves de Fenda Profissional! Confira no link 👇 #achadinhos #shopee #promocao", posted: false },
+            { id: "21598324472", itemId: "21598324472", itemName: "Kit Manta Decorativa Para Sofá Com 2 Capas De Almofada Jacquard", price: "62,9", sales: "10mil+", shopName: "Luana Home", commissionRate: "16%", commission: "R$10,06", productLink: "https://shopee.com.br/product/21598324472", offerLink: "https://s.shopee.com.br/3LPeBIGtxT", legenda: "🛋️ Kit Manta p/ Sofá + Almofadas! Garanta no link 👇 #achadinhos #shopee #promocao", posted: false }
         ];
 
+        // Global State Variables
         let currentData = [];
         let rawContent = "";
-        let currentMainTab = 'list'; // Default view: 'list' or 'import'
-        let currentSubTab = 'pending'; // 'pending' | 'posted' | 'all'
+        let currentMainTab = 'list';
+        let currentSubTab = 'pending';
         let pendingConfirmAction = null;
+        let deferredPrompt = null;
+
+        function initPWA() {
+            // 1. Generate Manifest Inline
+            const manifestObj = {
+                "name": "Conversor Shopee Afiliados",
+                "short_name": "Shopee Afiliados",
+                "description": "Gerenciador e Conversor de Planilhas para Afiliados Shopee",
+                "start_url": "./",
+                "display": "standalone",
+                "background_color": "#f8fafc",
+                "theme_color": "#ee4d2d",
+                "icons": [
+                    {
+                        "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png",
+                        "sizes": "192x192",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png",
+                        "sizes": "512x512",
+                        "type": "image/png"
+                    }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            document.getElementById('manifestLink').setAttribute('href', manifestURL);
+
+            // 2. Register Service Worker only on valid http/https origins (not in blob/sandbox environments)
+            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
+                const swCode = `
+                    const CACHE_NAME = 'shopee-converter-v1';
+                    self.addEventListener('install', (e) => { self.skipWaiting(); });
+                    self.addEventListener('activate', (e) => { self.clients.claim(); });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                    });
+                `;
+                try {
+                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                    const swURL = URL.createObjectURL(swBlob);
+                    navigator.serviceWorker.register(swURL)
+                        .then(() => console.log('PWA Service Worker Ativo!'))
+                        .catch(err => console.warn('PWA SW não pôde ser registrado neste ambiente:', err.message));
+                } catch (e) {
+                    console.warn('Registro de PWA ignorado no ambiente atual.');
+                }
+            }
+
+            // 3. Listen for Install Prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const btnInstall = document.getElementById('btnInstallPwa');
+                if (btnInstall) btnInstall.classList.remove('hidden');
+            });
+        }
+
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast('Aplicativo instalado com sucesso!');
+            }
+            deferredPrompt = null;
+            document.getElementById('btnInstallPwa').classList.add('hidden');
+        }
 
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
+            initPWA();
             loadFromStorage();
             renderTable();
             updateStats();
