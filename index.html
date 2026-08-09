@@ -856,21 +856,33 @@
                     body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const rawText = await response.text();
+                if (!rawText) throw new Error("Resposta vazia da API");
+
+                const result = JSON.parse(rawText);
                 let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
                 text = text.replace(/^["']|["']$/g, '');
 
-                if (text.length > 150) text = text.substring(0, 147) + '...';
-
-                if (text) {
-                    item.legenda = text;
-                    saveToStorage();
-                    renderTable();
-                    showToast('Nova legenda gerada por Inteligência Artificial!');
+                if (!text) {
+                    text = generateDefaultCaption(item.itemName);
+                } else if (text.length > 150) {
+                    text = text.substring(0, 147) + '...';
                 }
+
+                item.legenda = text;
+                saveToStorage();
+                renderTable();
+                showToast('Nova legenda gerada por Inteligência Artificial!');
             } catch (err) {
                 console.error("Erro na legenda IA:", err);
-                showToast('Não foi possível conectar à IA no momento.', 'warning');
+                item.legenda = generateDefaultCaption(item.itemName);
+                saveToStorage();
+                renderTable();
+                showToast('Gerada legenda padrão (serviço de IA indisponível).', 'warning');
             } finally {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-wand-magic-sparkles text-amber-500"></i>`;
@@ -912,17 +924,29 @@
                         body: JSON.stringify(payload)
                     });
 
-                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const rawText = await response.text();
+                    if (!rawText) throw new Error("Resposta vazia da API");
+
+                    const result = JSON.parse(rawText);
                     let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
                     text = text.replace(/^["']|["']$/g, '');
 
-                    if (text) {
-                        if (text.length > 150) text = text.substring(0, 147) + '...';
-                        item.legenda = text;
-                        success++;
+                    if (!text) {
+                        text = generateDefaultCaption(item.itemName);
+                    } else if (text.length > 150) {
+                        text = text.substring(0, 147) + '...';
                     }
+
+                    item.legenda = text;
+                    success++;
                 } catch (err) {
                     console.error("Erro no batch IA:", err);
+                    item.legenda = generateDefaultCaption(item.itemName);
+                    success++;
                 }
             }
 
@@ -930,7 +954,7 @@
             renderTable();
             mainBtn.disabled = false;
             mainBtn.innerHTML = originalHtml;
-            showToast(`Legendas geradas com sucesso para ${success} produtos!`);
+            showToast(`Legendas atualizadas para ${success} produtos!`);
         }
 
         function renderTable() {
