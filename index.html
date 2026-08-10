@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full bg-slate-50">
 <head>
+    <!-- STREAMING_CHUNK:Configuring Viewport & PWA Headers... -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conversor de Planilha Shopee Afiliados</title>
 
     <!-- PWA Meta Tags -->
@@ -24,6 +25,7 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- STREAMING_CHUNK:Setting up Tailwind Configuration... -->
     <script>
         tailwind.config = {
             theme: {
@@ -45,28 +47,14 @@
     </script>
 
     <style>
-        .sheets-grid {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        .sheets-grid th, .sheets-grid td {
-            border-right: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .sheets-grid th {
-            background-color: #f1f5f9;
-            font-weight: 600;
-            color: #334155;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .sheets-grid tr:hover td {
-            background-color: #f8fafc;
+        /* Prevent any unwanted horizontal scroll globally */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
         }
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f5f9;
@@ -80,131 +68,136 @@
         }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans text-slate-800 antialiased">
+<body class="min-h-full flex flex-col font-sans text-slate-800 antialiased bg-slate-50 overflow-x-hidden w-full">
 
+    <!-- STREAMING_CHUNK:Rendering Toast and Confirm Modal... -->
     <!-- Toast Notification -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 ease-in-out bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 border-l-4 border-emerald-500">
-        <i id="toastIcon" class="fas fa-check-circle text-emerald-400 text-lg"></i>
-        <span id="toastMessage" class="text-sm font-medium">Operação realizada com sucesso!</span>
+    <div id="toast" class="fixed top-3 right-3 left-3 sm:left-auto sm:right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 ease-in-out bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border-l-4 border-emerald-500 max-w-md mx-auto">
+        <i id="toastIcon" class="fas fa-check-circle text-emerald-400 text-base shrink-0"></i>
+        <span id="toastMessage" class="text-xs sm:text-sm font-medium leading-snug break-words">Operação realizada com sucesso!</span>
     </div>
 
     <!-- Custom Confirmation Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-100">
+    <div id="confirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-100 mx-auto">
             <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mx-auto">
                 <i class="fas fa-triangle-exclamation"></i>
             </div>
             <div class="text-center">
                 <h3 id="modalTitle" class="text-base font-bold text-slate-900">Limpar Lista de Produtos?</h3>
-                <p id="modalDesc" class="text-xs text-slate-500 mt-1">Esta ação removerá todos os produtos cadastrados da sua lista. Deseja continuar?</p>
+                <p id="modalDesc" class="text-xs text-slate-500 mt-1 leading-relaxed">Esta ação removerá todos os produtos cadastrados da sua lista. Deseja continuar?</p>
             </div>
-            <div class="flex items-center space-x-3 pt-2">
-                <button onclick="closeConfirmModal()" class="flex-1 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+            <div class="flex items-center space-x-2 pt-2">
+                <button onclick="closeConfirmModal()" class="flex-1 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
                     Cancelar
                 </button>
-                <button id="modalConfirmBtn" onclick="executeConfirmAction()" class="flex-1 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm">
+                <button id="modalConfirmBtn" onclick="executeConfirmAction()" class="flex-1 py-2.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm">
                     Confirmar
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- STREAMING_CHUNK:Rendering Main Header Bar... -->
     <!-- Top Navigation Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs w-full">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center py-2.5 sm:h-16 gap-2">
+                
                 <!-- Logo & Title -->
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-200">
-                        <i class="fas fa-file-excel text-xl"></i>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-200 shrink-0">
+                        <i class="fas fa-file-excel text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h1 class="text-lg font-bold text-slate-900 leading-tight">Conversor de Planilha Shopee</h1>
-                        <p class="text-xs text-slate-500">Gerenciador de Postagens Rápido para Afiliados</p>
+                    <div class="min-w-0 flex-1">
+                        <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight truncate">Conversor Shopee Afiliados</h1>
+                        <p class="text-[11px] sm:text-xs text-slate-500 truncate">Postagens Rápidas & Legendas IA</p>
                     </div>
                 </div>
 
                 <!-- Global Action Controls -->
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <button id="btnInstallPwa" onclick="installPWA()" class="hidden px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all flex items-center gap-1.5 animate-pulse">
+                <div class="flex items-center justify-between sm:justify-end gap-1.5 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+                    <button id="btnInstallPwa" onclick="installPWA()" class="hidden px-2.5 py-1.5 text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1 animate-pulse">
                         <i class="fas fa-download"></i>
-                        <span>Instalar App</span>
+                        <span>Instalar</span>
                     </button>
-                    <button onclick="resetToSample()" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5">
+                    <button onclick="resetToSample()" class="px-2 py-1.5 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors shrink-0 flex items-center gap-1">
                         <i class="fas fa-rotate-left"></i>
-                        <span class="hidden sm:inline">Restaurar Exemplo</span>
+                        <span>Exemplo</span>
                     </button>
-                    <button onclick="requestClearAll()" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1.5">
+                    <button onclick="requestClearAll()" class="px-2 py-1.5 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors shrink-0 flex items-center gap-1">
                         <i class="fas fa-trash-can"></i>
-                        <span class="hidden sm:inline">Limpar Lista</span>
+                        <span>Limpar</span>
                     </button>
-                    <button onclick="copyForSheets()" class="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                    <button onclick="copyForSheets()" class="px-2 py-1.5 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1">
                         <i class="fas fa-copy"></i>
-                        <span class="hidden sm:inline">Copiar p/ Sheets</span>
+                        <span>Sheets</span>
                     </button>
-                    <button onclick="exportToExcel()" class="px-3 py-1.5 text-xs font-semibold text-white bg-shopee-orange hover:bg-shopee-hover rounded-lg shadow-sm transition-all flex items-center gap-1.5">
-                        <i class="fas fa-download"></i>
-                        <span>Baixar Excel</span>
+                    <button onclick="exportToExcel()" class="px-2.5 py-1.5 text-[11px] font-semibold text-white bg-shopee-orange hover:bg-shopee-hover rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- STREAMING_CHUNK:Rendering Main View Navigation Tabs... -->
     <!-- Main Content Wrapper -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 space-y-4 sm:space-y-6">
 
         <!-- MAIN TABS SELECTION BAR -->
-        <div class="flex border-b border-slate-200 bg-white rounded-2xl p-1.5 shadow-sm border">
-            <button id="mainTabImport" onclick="switchMainTab('import')" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-                <i class="fas fa-cloud-arrow-up text-base"></i>
-                <span>1. Importar Planilha</span>
+        <div class="flex border border-slate-200 bg-white rounded-xl p-1 shadow-xs gap-1">
+            <button id="mainTabImport" onclick="switchMainTab('import')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                <i class="fas fa-cloud-arrow-up text-sm"></i>
+                <span class="truncate">1. Importar Planilha</span>
             </button>
-            <button id="mainTabList" onclick="switchMainTab('list')" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-shopee-orange text-white shadow-sm">
-                <i class="fas fa-list-check text-base"></i>
-                <span>2. Produtos para Postar</span>
-                <span id="tabBadgePending" class="bg-amber-100 text-amber-800 text-xs font-extrabold px-2 py-0.5 rounded-full ml-1">0</span>
+            <button id="mainTabList" onclick="switchMainTab('list')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs">
+                <i class="fas fa-list-check text-sm"></i>
+                <span class="truncate">2. Produtos a Postar</span>
+                <span id="tabBadgePending" class="bg-amber-100 text-amber-900 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-0.5">0</span>
             </button>
         </div>
 
+        <!-- STREAMING_CHUNK:Rendering Tab 1 - Import View... -->
         <!-- ========================================== -->
         <!-- TAB 1: IMPORTAR PLANILHA (DEDICATED VIEW) -->
         <!-- ========================================== -->
-        <div id="viewImport" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <div class="max-w-3xl mx-auto space-y-6">
+        <div id="viewImport" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs">
+                <div class="max-w-3xl mx-auto space-y-4 sm:space-y-6">
                     
                     <div class="text-center space-y-1">
-                        <h2 class="text-base font-bold text-slate-900">Importação de Dados da Shopee</h2>
-                        <p class="text-xs text-slate-500">Envie o arquivo CSV/XLSX baixado do painel ou cole o conteúdo bruto da planilha. As informações serão acumuladas na sua lista de postagens.</p>
+                        <h2 class="text-sm sm:text-base font-bold text-slate-900">Importar Dados da Shopee</h2>
+                        <p class="text-xs text-slate-500">Envie o arquivo CSV/XLSX baixado do painel de afiliados ou cole o conteúdo bruto. Os itens serão acumulados na sua lista.</p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Upload Option 1: File Drop Zone -->
-                        <div class="flex flex-col justify-between border-2 border-dashed border-slate-300 hover:border-shopee-orange rounded-2xl p-6 text-center cursor-pointer bg-slate-50 hover:bg-shopee-light/30 transition-all group" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <!-- File Drop Zone -->
+                        <div class="flex flex-col justify-between border-2 border-dashed border-slate-300 hover:border-shopee-orange rounded-2xl p-5 text-center cursor-pointer bg-slate-50 hover:bg-shopee-light/30 transition-all group" id="dropZone" onclick="document.getElementById('fileInput').click()">
                             <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xls,.tsv" multiple class="hidden" onchange="handleFilesSelect(event)">
-                            <div class="space-y-3 my-auto">
-                                <div class="w-14 h-14 mx-auto rounded-2xl bg-orange-100 text-shopee-orange flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-                                    <i class="fas fa-file-excel text-3xl"></i>
+                            <div class="space-y-2.5 my-auto">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-orange-100 text-shopee-orange flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+                                    <i class="fas fa-file-excel text-2xl"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-slate-800">Enviar Arquivo(s) Planilha</p>
-                                    <p class="text-xs text-slate-400 mt-1">Arraste ou selecione **vários arquivos** de uma vez (.csv, .xlsx, .txt)</p>
+                                    <p class="text-xs sm:text-sm font-bold text-slate-800">Enviar Arquivo(s)</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Selecione um ou vários arquivos (.csv, .xlsx, .txt)</p>
                                 </div>
                             </div>
-                            <div id="fileInfo" class="text-[11px] text-slate-500 italic mt-4 pt-3 border-t border-slate-200/60">
+                            <div id="fileInfo" class="text-[11px] text-slate-500 italic mt-3 pt-2 border-t border-slate-200/60 truncate">
                                 Nenhum arquivo selecionado
                             </div>
                         </div>
 
-                        <!-- Upload Option 2: Direct Paste -->
-                        <div class="flex flex-col justify-between bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                        <!-- Direct Paste -->
+                        <div class="flex flex-col justify-between bg-slate-50 border border-slate-200 rounded-2xl p-3.5 sm:p-4">
                             <label class="text-xs font-bold text-slate-700 flex items-center justify-between mb-2">
-                                <span><i class="fas fa-paste text-emerald-600 mr-1.5"></i>Cole o Texto Bruto da Planilha</span>
+                                <span><i class="fas fa-paste text-emerald-600 mr-1"></i>Texto Bruto da Planilha</span>
                                 <span class="text-[10px] text-slate-400 font-normal">Ctrl + V</span>
                             </label>
-                            <textarea id="rawTextarea" placeholder="Cole as linhas copiadas da sua planilha aqui..." class="w-full flex-1 p-3 text-xs font-mono bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-shopee-orange focus:border-transparent resize-none min-h-[140px] custom-scrollbar"></textarea>
-                            <button onclick="processPastedText()" class="mt-3 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center gap-2">
+                            <textarea id="rawTextarea" placeholder="Cole as linhas copiadas da sua planilha aqui..." class="w-full flex-1 p-2.5 text-xs font-mono bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-shopee-orange focus:border-transparent resize-none min-h-[120px] custom-scrollbar"></textarea>
+                            <button onclick="processPastedText()" class="mt-2.5 w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center gap-1.5">
                                 <i class="fas fa-bolt text-yellow-400"></i>
                                 Processar Texto Copiado
                             </button>
@@ -212,10 +205,10 @@
                     </div>
 
                     <!-- Settings Bar -->
-                    <div class="bg-slate-100 rounded-xl p-3 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="font-semibold">Separador de Colunas:</span>
-                            <select id="delimiterSelect" onchange="reprocessCurrentInput()" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-shopee-orange">
+                    <div class="bg-slate-100 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 gap-2">
+                        <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
+                            <span class="font-semibold">Separador:</span>
+                            <select id="delimiterSelect" onchange="reprocessCurrentInput()" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-shopee-orange">
                                 <option value="auto">Detectar Automático</option>
                                 <option value=",">Vírgula (,)</option>
                                 <option value=";">Ponto e Vírgula (;)</option>
@@ -223,13 +216,13 @@
                             </select>
                         </div>
                         <div class="flex items-center text-emerald-700 font-medium text-[11px]">
-                            <i class="fas fa-circle-check mr-1.5"></i> Acumula dados na lista sem apagar os anteriores
+                            <i class="fas fa-circle-check mr-1"></i> Acumula dados sem apagar os anteriores
                         </div>
                     </div>
 
                     <!-- Action Link to View List -->
-                    <div class="pt-2 text-center">
-                        <button onclick="switchMainTab('list')" class="px-6 py-2.5 bg-shopee-orange hover:bg-shopee-hover text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center gap-2">
+                    <div class="pt-1 text-center">
+                        <button onclick="switchMainTab('list')" class="w-full sm:w-auto px-6 py-3 bg-shopee-orange hover:bg-shopee-hover text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center justify-center gap-2">
                             <span>Ver Produtos na Lista de Postagens</span>
                             <i class="fas fa-arrow-right"></i>
                         </button>
@@ -239,132 +232,124 @@
             </div>
         </div>
 
+        <!-- STREAMING_CHUNK:Rendering Tab 2 - Products List View... -->
         <!-- ================================================== -->
         <!-- TAB 2: PRODUTOS PARA POSTAR (DEDICATED LIST VIEW)  -->
         <!-- ================================================== -->
-        <div id="viewList" class="space-y-6">
+        <div id="viewList" class="space-y-4 sm:space-y-6">
 
-            <!-- Stats Bar -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+            <!-- Stats Bar (Optimized for Mobile 2-columns) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+                <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-base shrink-0">
                         <i class="fas fa-boxes-stacked"></i>
                     </div>
-                    <div>
-                        <div class="text-xs text-slate-500 font-medium">A Postar</div>
-                        <div id="statTotalItems" class="text-lg font-bold text-slate-800">0</div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] sm:text-xs text-slate-500 font-medium truncate">A Postar</div>
+                        <div id="statTotalItems" class="text-base sm:text-lg font-bold text-slate-800">0</div>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-base shrink-0">
                         <i class="fas fa-hand-holding-dollar"></i>
                     </div>
-                    <div>
-                        <div class="text-xs text-slate-500 font-medium">Comissão Total Est.</div>
-                        <div id="statTotalCommission" class="text-lg font-bold text-slate-800">R$ 0,00</div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Comissão Est.</div>
+                        <div id="statTotalCommission" class="text-sm sm:text-lg font-bold text-slate-800 truncate">R$ 0,00</div>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-base shrink-0">
                         <i class="fas fa-percent"></i>
                     </div>
-                    <div>
-                        <div class="text-xs text-slate-500 font-medium">Comissão Média</div>
-                        <div id="statAvgCommission" class="text-lg font-bold text-slate-800">0%</div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Comissão Média</div>
+                        <div id="statAvgCommission" class="text-base sm:text-lg font-bold text-slate-800">0%</div>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-orange-50 text-shopee-orange flex items-center justify-center text-lg">
+                <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-orange-50 text-shopee-orange flex items-center justify-center text-base shrink-0">
                         <i class="fas fa-link"></i>
                     </div>
-                    <div>
-                        <div class="text-xs text-slate-500 font-medium">Links Ativos</div>
-                        <div id="statTotalLinks" class="text-lg font-bold text-slate-800">0</div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Links Ativos</div>
+                        <div id="statTotalLinks" class="text-base sm:text-lg font-bold text-slate-800">0</div>
                     </div>
                 </div>
 
                 <!-- AI Caption Generation Action -->
-                <div class="bg-gradient-to-r from-purple-900 to-indigo-900 p-4 rounded-xl shadow-sm text-white flex flex-col justify-between">
+                <div class="col-span-2 sm:col-span-1 bg-gradient-to-r from-purple-900 to-indigo-900 p-3 sm:p-4 rounded-xl shadow-xs text-white flex flex-col justify-between">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-purple-200 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-[10px] sm:text-xs text-purple-200 font-bold uppercase tracking-wider flex items-center gap-1">
                             <i class="fas fa-wand-magic-sparkles text-amber-300"></i> Legendas c/ IA
                         </span>
-                        <span class="text-[10px] bg-purple-800/80 px-2 py-0.5 rounded text-purple-200">Max 150 Caracteres</span>
+                        <span class="text-[9px] bg-purple-800/80 px-1.5 py-0.5 rounded text-purple-200">Max 150 Caracteres</span>
                     </div>
-                    <button onclick="generateAllLegendasAI()" id="btnAiBatch" class="mt-2 w-full py-1.5 px-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-bold text-xs rounded-lg shadow transition-all flex items-center justify-center gap-1.5">
-                        <i class="fas fa-robot text-sm"></i>
+                    <button onclick="generateAllLegendasAI()" id="btnAiBatch" class="mt-2 w-full py-1.5 px-2 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-bold text-xs rounded-lg shadow transition-all flex items-center justify-center gap-1.5">
+                        <i class="fas fa-robot text-xs"></i>
                         <span>Gerar Legendas p/ Todos</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Consolidated Stream Table -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <!-- Table Header Controls Bar -->
-                <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            <!-- STREAMING_CHUNK:Rendering List Controls and Mobile Cards... -->
+            <!-- Products List Section (Replaced Table with Mobile Card View to avoid horizontal overflow) -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden w-full">
+                
+                <!-- Controls Bar -->
+                <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col gap-3">
                     
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
                         <div class="flex items-center space-x-2">
-                            <span class="flex h-3 w-3 relative">
+                            <span class="flex h-2.5 w-2.5 relative">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                             </span>
-                            <h3 class="font-bold text-sm text-slate-800">Lista de Produtos para Postar</h3>
+                            <h3 class="font-bold text-xs sm:text-sm text-slate-800">Lista de Produtos</h3>
                         </div>
 
                         <!-- Filter Sub-tabs -->
-                        <div class="flex bg-slate-200/80 p-0.5 rounded-lg text-xs font-medium">
-                            <button id="tabPending" onclick="switchSubTab('pending')" class="px-3 py-1 rounded-md transition-all bg-white shadow-sm text-slate-900 font-semibold">
+                        <div class="flex bg-slate-200/80 p-0.5 rounded-lg text-xs font-medium w-full sm:w-auto justify-between sm:justify-start">
+                            <button id="tabPending" onclick="switchSubTab('pending')" class="flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all bg-white shadow-xs text-slate-900 font-semibold text-center text-[11px]">
                                 A Postar (<span id="cntPending">0</span>)
                             </button>
-                            <button id="tabPosted" onclick="switchSubTab('posted')" class="px-3 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900">
-                                Já Postados (<span id="cntPosted">0</span>)
+                            <button id="tabPosted" onclick="switchSubTab('posted')" class="flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900 text-center text-[11px]">
+                                Postados (<span id="cntPosted">0</span>)
                             </button>
-                            <button id="tabAll" onclick="switchSubTab('all')" class="px-3 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900">
+                            <button id="tabAll" onclick="switchSubTab('all')" class="flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900 text-center text-[11px]">
                                 Todos (<span id="cntAll">0</span>)
                             </button>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center space-x-2 gap-y-2">
+                    <div class="flex items-center justify-between gap-2">
                         <!-- Search input -->
-                        <div class="relative w-full sm:w-64">
+                        <div class="relative w-full">
                             <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                            <input type="text" id="searchInput" oninput="filterTable()" placeholder="Buscar produto ou loja..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-shopee-orange">
+                            <input type="text" id="searchInput" oninput="filterTable()" placeholder="Buscar por produto ou loja..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-shopee-orange">
                         </div>
 
-                        <button onclick="copyOnlyLinks()" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors flex items-center gap-1 text-nowrap">
+                        <button onclick="copyOnlyLinks()" class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors flex items-center gap-1 whitespace-nowrap shrink-0">
                             <i class="fas fa-link text-slate-500"></i>
-                            <span>Copiar Links</span>
+                            <span class="hidden sm:inline">Copiar Links</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Table Container -->
-                <div class="overflow-x-auto max-h-[620px] custom-scrollbar">
-                    <table class="w-full text-left border-collapse sheets-grid text-xs">
-                        <thead>
-                            <tr id="tableHeaderRow">
-                                <th class="p-3 w-10 text-center text-slate-400">#</th>
-                                <th class="p-3">Produto, Legenda & Ações Rápidas</th>
-                                <th class="p-3 w-20 text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-200 bg-white font-sans text-slate-700">
-                            <!-- Dynamic rows populated by JavaScript -->
-                        </tbody>
-                    </table>
+                <!-- Cards Container (Fully Responsive Grid Layout without horizontal scrolling) -->
+                <div id="cardsList" class="divide-y divide-slate-100 max-h-[620px] overflow-y-auto custom-scrollbar p-2 sm:p-3 space-y-2">
+                    <!-- Dynamic Product Cards populated by JS -->
                 </div>
 
-                <!-- Table Footer info -->
-                <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+                <!-- Footer info -->
+                <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1 text-center sm:text-left">
                     <span id="showingText">Mostrando 0 produtos</span>
-                    <span class="flex items-center gap-1 text-slate-400">
+                    <span class="flex items-center justify-center gap-1 text-slate-400">
                         <i class="fas fa-bolt text-emerald-500"></i>
-                        Acessar Link abre a oferta e joga o produto automaticamente para "Já Postados"
+                        Acessar Link abre a oferta e move para "Já Postados"
                     </span>
                 </div>
             </div>
@@ -373,6 +358,7 @@
 
     </main>
 
+    <!-- STREAMING_CHUNK:Initializing Application State & JavaScript... -->
     <script>
         // SAMPLE DATA (Exemplo Padrão)
         const SAMPLE_DATA = [
@@ -382,7 +368,7 @@
             { id: "21598324472", itemId: "21598324472", itemName: "Kit Manta Decorativa Para Sofá Com 2 Capas De Almofada Jacquard", price: "62,9", sales: "10mil+", shopName: "Luana Home", commissionRate: "16%", commission: "R$10,06", productLink: "https://shopee.com.br/product/21598324472", offerLink: "https://s.shopee.com.br/3LPeBIGtxT", legenda: "🛋️ Kit Manta p/ Sofá + Almofadas! Garanta no link 👇 #achadinhos #shopee #promocao", posted: false }
         ];
 
-        // Global State Variables
+        // Global State
         let currentData = [];
         let rawContent = "";
         let currentMainTab = 'list';
@@ -391,54 +377,37 @@
         let deferredPrompt = null;
 
         function initPWA() {
-            // 1. Generate Manifest Inline
             const manifestObj = {
                 "name": "Conversor Shopee Afiliados",
                 "short_name": "Shopee Afiliados",
-                "description": "Gerenciador e Conversor de Planilhas para Afiliados Shopee",
+                "description": "Gerenciador de Planilhas e Postagens para Afiliados Shopee",
                 "start_url": "./",
                 "display": "standalone",
                 "background_color": "#f8fafc",
                 "theme_color": "#ee4d2d",
                 "icons": [
-                    {
-                        "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png",
-                        "sizes": "192x192",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png",
-                        "sizes": "512x512",
-                        "type": "image/png"
-                    }
+                    { "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png", "sizes": "192x192", "type": "image/png" },
+                    { "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png", "sizes": "512x512", "type": "image/png" }
                 ]
             };
             const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
             const manifestURL = URL.createObjectURL(manifestBlob);
-            document.getElementById('manifestLink').setAttribute('href', manifestURL);
+            const mLink = document.getElementById('manifestLink');
+            if (mLink) mLink.setAttribute('href', manifestURL);
 
-            // 2. Register Service Worker only on valid http/https origins (not in blob/sandbox environments)
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
                 const swCode = `
-                    const CACHE_NAME = 'shopee-converter-v1';
                     self.addEventListener('install', (e) => { self.skipWaiting(); });
                     self.addEventListener('activate', (e) => { self.clients.claim(); });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-                    });
+                    self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
                 `;
                 try {
                     const swBlob = new Blob([swCode], { type: 'application/javascript' });
                     const swURL = URL.createObjectURL(swBlob);
-                    navigator.serviceWorker.register(swURL)
-                        .then(() => console.log('PWA Service Worker Ativo!'))
-                        .catch(err => console.warn('PWA SW não pôde ser registrado neste ambiente:', err.message));
-                } catch (e) {
-                    console.warn('Registro de PWA ignorado no ambiente atual.');
-                }
+                    navigator.serviceWorker.register(swURL).catch(() => {});
+                } catch (e) {}
             }
 
-            // 3. Listen for Install Prompt
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
@@ -451,14 +420,11 @@
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                showToast('Aplicativo instalado com sucesso!');
-            }
+            if (outcome === 'accepted') showToast('Aplicativo instalado com sucesso!');
             deferredPrompt = null;
             document.getElementById('btnInstallPwa').classList.add('hidden');
         }
 
-        // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
             initPWA();
             loadFromStorage();
@@ -467,6 +433,7 @@
             setupDragAndDrop();
         });
 
+        // STREAMING_CHUNK:Tab and Navigation Logic...
         function switchMainTab(tab) {
             currentMainTab = tab;
             const btnImport = document.getElementById('mainTabImport');
@@ -475,13 +442,13 @@
             const viewList = document.getElementById('viewList');
 
             if (tab === 'import') {
-                btnImport.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-shopee-orange text-white shadow-sm";
-                btnList.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+                btnImport.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs";
+                btnList.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100";
                 viewImport.classList.remove('hidden');
                 viewList.classList.add('hidden');
             } else {
-                btnList.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-shopee-orange text-white shadow-sm";
-                btnImport.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+                btnList.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs";
+                btnImport.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100";
                 viewList.classList.remove('hidden');
                 viewImport.classList.add('hidden');
             }
@@ -491,32 +458,28 @@
             currentSubTab = tab;
             ['tabPending', 'tabPosted', 'tabAll'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.className = "px-3 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900";
+                if (el) el.className = "flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all text-slate-600 hover:text-slate-900 text-center text-[11px]";
             });
 
-            if (tab === 'pending') document.getElementById('tabPending').className = "px-3 py-1 rounded-md transition-all bg-white shadow-sm text-slate-900 font-semibold";
-            else if (tab === 'posted') document.getElementById('tabPosted').className = "px-3 py-1 rounded-md transition-all bg-white shadow-sm text-slate-900 font-semibold";
-            else document.getElementById('tabAll').className = "px-3 py-1 rounded-md transition-all bg-white shadow-sm text-slate-900 font-semibold";
+            if (tab === 'pending') document.getElementById('tabPending').className = "flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all bg-white shadow-xs text-slate-900 font-semibold text-center text-[11px]";
+            else if (tab === 'posted') document.getElementById('tabPosted').className = "flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all bg-white shadow-xs text-slate-900 font-semibold text-center text-[11px]";
+            else document.getElementById('tabAll').className = "flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all bg-white shadow-xs text-slate-900 font-semibold text-center text-[11px]";
 
             renderTable();
         }
 
-        // Local Storage
         function loadFromStorage() {
-            const saved = localStorage.getItem('shopee_converter_data_v4');
+            const saved = localStorage.getItem('shopee_converter_data_v5');
             if (saved) {
-                try {
-                    currentData = JSON.parse(saved);
-                } catch (e) {
-                    currentData = [...SAMPLE_DATA];
-                }
+                try { currentData = JSON.parse(saved); }
+                catch (e) { currentData = [...SAMPLE_DATA]; }
             } else {
                 currentData = [...SAMPLE_DATA];
             }
         }
 
         function saveToStorage() {
-            localStorage.setItem('shopee_converter_data_v4', JSON.stringify(currentData));
+            localStorage.setItem('shopee_converter_data_v5', JSON.stringify(currentData));
         }
 
         function setupDragAndDrop() {
@@ -551,13 +514,10 @@
             if (files.length === 0) return;
 
             document.getElementById('fileInfo').innerText = `Processando ${files.length} arquivo(s)...`;
-            
             let totalAdded = 0;
             let totalDuplicates = 0;
-            const loadedNames = [];
 
             for (const file of files) {
-                loadedNames.push(file.name);
                 try {
                     const text = await readFileContent(file);
                     if (text) {
@@ -570,7 +530,7 @@
                         }
                     }
                 } catch (err) {
-                    console.error("Erro ao ler arquivo " + file.name, err);
+                    console.error("Erro no arquivo " + file.name, err);
                 }
             }
 
@@ -578,12 +538,12 @@
             renderTable();
             updateStats();
 
-            document.getElementById('fileInfo').innerText = `${files.length} arquivo(s) carregado(s): ${loadedNames.join(', ')}`;
+            document.getElementById('fileInfo').innerText = `${files.length} arquivo(s) carregado(s).`;
 
             if (totalAdded > 0) {
-                showToast(`${totalAdded} novos produtos adicionados de ${files.length} arquivo(s)!` + (totalDuplicates > 0 ? ` (${totalDuplicates} duplicados ignorados)` : ''));
+                showToast(`${totalAdded} novos produtos adicionados!` + (totalDuplicates > 0 ? ` (${totalDuplicates} duplicados ignorados)` : ''));
             } else if (totalDuplicates > 0) {
-                showToast(`Todos os ${totalDuplicates} produtos dos ${files.length} arquivos já estavam na lista.`, 'warning');
+                showToast(`Todos os ${totalDuplicates} produtos já estavam na lista.`, 'warning');
             }
         }
 
@@ -600,16 +560,12 @@
                             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                             const csvText = XLSX.utils.sheet_to_csv(firstSheet);
                             resolve(csvText);
-                        } catch (err) {
-                            reject(err);
-                        }
+                        } catch (err) { reject(err); }
                     };
                     reader.onerror = reject;
                     reader.readAsArrayBuffer(file);
                 } else {
-                    reader.onload = function(e) {
-                        resolve(e.target.result);
-                    };
+                    reader.onload = function(e) { resolve(e.target.result); };
                     reader.onerror = reject;
                     reader.readAsText(file);
                 }
@@ -619,7 +575,7 @@
         function processPastedText() {
             const text = document.getElementById('rawTextarea').value.trim();
             if (!text) {
-                showToast('Por favor, cole algum texto de planilha para converter.', 'warning');
+                showToast('Cole algum texto de planilha para converter.', 'warning');
                 return;
             }
             rawContent = text;
@@ -630,6 +586,7 @@
             if (rawContent) parseAndConvert(rawContent, true);
         }
 
+        // STREAMING_CHUNK:Parsing and Data Conversion Engine...
         function parseAndConvert(text, autoNotify = true) {
             const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
             if (lines.length === 0) return { addedCount: 0, duplicateCount: 0 };
@@ -757,7 +714,7 @@
 
             if (autoNotify) {
                 if (addedCount > 0) {
-                    showToast(`${addedCount} novos produtos acrescentados à lista!` + (duplicateCount > 0 ? ` (${duplicateCount} duplicados ignorados)` : ''));
+                    showToast(`${addedCount} novos produtos adicionados à lista!`);
                 } else if (duplicateCount > 0) {
                     showToast(`Todos os ${duplicateCount} produtos já estavam na sua lista.`, 'warning');
                 }
@@ -870,7 +827,7 @@
                 
                 if (btnElement) {
                     const originalHtml = btnElement.innerHTML;
-                    btnElement.innerHTML = `<i class="fas fa-check text-emerald-300"></i> Legenda Copiada!`;
+                    btnElement.innerHTML = `<i class="fas fa-check text-emerald-300"></i> Copiado!`;
                     btnElement.classList.remove('bg-purple-600', 'hover:bg-purple-700');
                     btnElement.classList.add('bg-emerald-600');
                     
@@ -887,7 +844,7 @@
             }
         }
 
-        // Open offer link in a new tab AND automatically mark as POSTED
+        // Open offer link and auto-post
         function openLinkAndPost(id) {
             const item = currentData.find(d => d.id === id);
             if (item) {
@@ -904,10 +861,11 @@
                 renderTable();
                 updateStats();
 
-                showToast('Link aberto! Produto movido automaticamente para Já Postados. 🚀');
+                showToast('Link aberto! Produto movido para Já Postados. 🚀');
             }
         }
 
+        // STREAMING_CHUNK:AI Caption Single & Batch Generators...
         async function generateLegendaAI(id) {
             const item = currentData.find(d => d.id === id);
             if (!item) return;
@@ -936,9 +894,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const rawText = await response.text();
                 if (!rawText) throw new Error("Resposta vazia da API");
@@ -947,22 +903,19 @@
                 let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
                 text = text.replace(/^["']|["']$/g, '');
 
-                if (!text) {
-                    text = generateDefaultCaption(item.itemName);
-                } else if (text.length > 150) {
-                    text = text.substring(0, 147) + '...';
-                }
+                if (!text) text = generateDefaultCaption(item.itemName);
+                else if (text.length > 150) text = text.substring(0, 147) + '...';
 
                 item.legenda = text;
                 saveToStorage();
                 renderTable();
-                showToast('Nova legenda gerada por Inteligência Artificial!');
+                showToast('Legenda gerada por IA!');
             } catch (err) {
                 console.error("Erro na legenda IA:", err);
                 item.legenda = generateDefaultCaption(item.itemName);
                 saveToStorage();
                 renderTable();
-                showToast('Gerada legenda padrão (serviço de IA indisponível).', 'warning');
+                showToast('Legenda padrão aplicada (IA indisponível).', 'warning');
             } finally {
                 if (btn) {
                     btn.innerHTML = `<i class="fas fa-wand-magic-sparkles text-amber-500"></i>`;
@@ -1004,9 +957,7 @@
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                     const rawText = await response.text();
                     if (!rawText) throw new Error("Resposta vazia da API");
@@ -1015,16 +966,12 @@
                     let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
                     text = text.replace(/^["']|["']$/g, '');
 
-                    if (!text) {
-                        text = generateDefaultCaption(item.itemName);
-                    } else if (text.length > 150) {
-                        text = text.substring(0, 147) + '...';
-                    }
+                    if (!text) text = generateDefaultCaption(item.itemName);
+                    else if (text.length > 150) text = text.substring(0, 147) + '...';
 
                     item.legenda = text;
                     success++;
                 } catch (err) {
-                    console.error("Erro no batch IA:", err);
                     item.legenda = generateDefaultCaption(item.itemName);
                     success++;
                 }
@@ -1037,10 +984,11 @@
             showToast(`Legendas atualizadas para ${success} produtos!`);
         }
 
+        // STREAMING_CHUNK:Rendering Products Responsive Cards List...
         function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+            const listContainer = document.getElementById('cardsList');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
 
             const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
@@ -1060,91 +1008,89 @@
             document.getElementById('showingText').innerText = `Mostrando ${filtered.length} de ${currentData.length} produtos`;
 
             if (filtered.length === 0) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td colspan="3" class="p-8 text-center text-slate-400">
+                listContainer.innerHTML = `
+                    <div class="p-8 text-center text-slate-400">
                         <i class="fas fa-box-open text-3xl mb-2 block text-slate-300"></i>
-                        Nenhum produto encontrado nesta visualização.
-                    </td>
+                        Nenhum produto encontrado nesta aba.
+                    </div>
                 `;
-                tbody.appendChild(tr);
             } else {
                 filtered.forEach((row, idx) => {
-                    const tr = document.createElement('tr');
-                    tr.className = row.posted ? "bg-slate-50 opacity-75 hover:bg-slate-100 transition-colors" : "hover:bg-slate-50 transition-colors";
+                    const card = document.createElement('div');
+                    card.className = row.posted 
+                        ? "p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 opacity-75 space-y-2.5 transition-all w-full"
+                        : "p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-xs space-y-2.5 transition-all w-full";
 
-                    tr.innerHTML = `
-                        <td class="p-3 text-center text-slate-400 font-mono">${idx + 1}</td>
-                        
-                        <!-- CONSOLIDATED UNIFIED SINGLE COLUMN -->
-                        <td class="p-3.5">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                
-                                <!-- Product Details -->
-                                <div class="space-y-1.5 max-w-xl">
-                                    <div class="font-bold text-slate-900 text-sm leading-snug">
-                                        ${escapeHtml(row.itemName)}
-                                    </div>
-                                    <div class="flex flex-wrap items-center gap-2 text-xs">
-                                        <span class="bg-orange-100 text-shopee-orange font-bold px-2 py-0.5 rounded-md">
-                                            R$ ${escapeHtml(row.price)}
-                                        </span>
-                                        <span class="bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded-md border border-emerald-100">
-                                            <i class="fas fa-bag-shopping text-[10px] mr-1"></i>${escapeHtml(row.sales)} vendas
-                                        </span>
-                                        <span class="bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded-md border border-slate-200">
-                                            Comissão: ${escapeHtml(row.commissionRate)} (${escapeHtml(row.commission)})
-                                        </span>
-                                        <span class="text-slate-400 text-xs">
-                                            <i class="fas fa-store text-[10px] mr-1"></i>${escapeHtml(row.shopName)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons in the unified column -->
-                                <div class="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
-                                    
-                                    <!-- BUTTON 1: COPIAR LEGENDA -->
-                                    <button onclick="copyLegenda('${row.id}', this)" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all flex items-center gap-1.5 active:scale-95" title="Copiar legenda para a área de transferência">
-                                        <i class="fas fa-copy"></i>
-                                        <span>Copiar Legenda</span>
-                                    </button>
-
-                                    <!-- BUTTON 2: ACESSAR LINK (OPENS & AUTO-POSTS) -->
-                                    ${row.posted ? `
-                                        <span class="px-3 py-2 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-lg flex items-center gap-1">
-                                            <i class="fas fa-circle-check text-emerald-600"></i> Já Postado
-                                        </span>
-                                    ` : `
-                                        <button onclick="openLinkAndPost('${row.id}')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all flex items-center gap-1.5 active:scale-95 group">
-                                            <i class="fas fa-up-right-from-square group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
-                                            <span>Acessar Link</span>
-                                        </button>
-                                    `}
-
-                                    <!-- AI Regenerate Button -->
-                                    <button onclick="generateLegendaAI('${row.id}')" id="btnAi_${row.id}" class="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" title="Regerar esta legenda com Inteligência Artificial">
-                                        <i class="fas fa-wand-magic-sparkles text-amber-500"></i>
-                                    </button>
-                                </div>
-
+                    card.innerHTML = `
+                        <!-- Product Title and Badges -->
+                        <div class="space-y-1.5 w-full">
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] font-mono text-slate-400 font-bold bg-slate-100 px-1.5 py-0.5 rounded shrink-0">#${idx + 1}</span>
+                                <h4 class="font-bold text-slate-900 text-xs sm:text-sm leading-snug break-words flex-1">
+                                    ${escapeHtml(row.itemName)}
+                                </h4>
                             </div>
-                        </td>
 
-                        <td class="p-3 text-center">
-                            <div class="flex items-center justify-center space-x-1">
+                            <!-- Badges -->
+                            <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                                <span class="bg-orange-100 text-shopee-orange font-bold px-2 py-0.5 rounded-md shrink-0">
+                                    R$ ${escapeHtml(row.price)}
+                                </span>
+                                <span class="bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded-md border border-emerald-100 shrink-0">
+                                    <i class="fas fa-bag-shopping text-[9px] mr-1"></i>${escapeHtml(row.sales)}
+                                </span>
+                                <span class="bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
+                                    Comissão: ${escapeHtml(row.commissionRate)} (${escapeHtml(row.commission)})
+                                </span>
+                                <span class="text-slate-400 text-[11px] truncate max-w-[160px]">
+                                    <i class="fas fa-store text-[9px] mr-0.5"></i>${escapeHtml(row.shopName)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Action Controls (Responsive Row) -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                            
+                            <div class="flex items-center gap-1.5 flex-1 min-w-[200px]">
+                                <!-- Copiar Legenda Button -->
+                                <button onclick="copyLegenda('${row.id}', this)" class="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95" title="Copiar legenda do produto">
+                                    <i class="fas fa-copy"></i>
+                                    <span>Copiar Legenda</span>
+                                </button>
+
+                                <!-- AI Single Generator -->
+                                <button onclick="generateLegendaAI('${row.id}')" id="btnAi_${row.id}" class="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold transition-colors shrink-0" title="Regerar legenda com IA">
+                                    <i class="fas fa-wand-magic-sparkles text-amber-500"></i>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-1.5">
+                                <!-- Acessar Link Button -->
                                 ${row.posted ? `
-                                    <button onclick="togglePostedStatus('${row.id}')" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium p-1" title="Restaurar para A Postar">
+                                    <span class="px-3 py-2 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-lg flex items-center gap-1">
+                                        <i class="fas fa-circle-check text-emerald-600"></i> Já Postado
+                                    </span>
+                                ` : `
+                                    <button onclick="openLinkAndPost('${row.id}')" class="py-2 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 group">
+                                        <i class="fas fa-up-right-from-square group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                                        <span>Acessar Link</span>
+                                    </button>
+                                `}
+
+                                ${row.posted ? `
+                                    <button onclick="togglePostedStatus('${row.id}')" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium px-1" title="Restaurar produto">
                                         Desfazer
                                     </button>
                                 ` : ''}
-                                <button onclick="removeRow('${row.id}')" class="text-slate-400 hover:text-red-500 p-1.5 rounded transition-colors" title="Excluir do Conversor">
+
+                                <button onclick="removeRow('${row.id}')" class="text-slate-400 hover:text-red-500 p-1.5 rounded transition-colors" title="Excluir produto">
                                     <i class="fas fa-trash-can"></i>
                                 </button>
                             </div>
-                        </td>
+
+                        </div>
                     `;
-                    tbody.appendChild(tr);
+                    listContainer.appendChild(card);
                 });
             }
 
@@ -1161,9 +1107,7 @@
             document.getElementById('tabBadgePending').innerText = pending;
         }
 
-        function filterTable() {
-            renderTable();
-        }
+        function filterTable() { renderTable(); }
 
         function removeRow(id) {
             currentData = currentData.filter(d => d.id !== id);
@@ -1176,13 +1120,13 @@
         function requestClearAll() {
             openConfirmModal(
                 'Limpar Lista de Produtos?',
-                'Esta ação removerá permanentemente todos os produtos cadastrados da sua lista. Deseja continuar?',
+                'Esta ação removerá todos os produtos cadastrados da sua lista. Deseja continuar?',
                 () => {
                     currentData = [];
                     saveToStorage();
                     renderTable();
                     updateStats();
-                    showToast('Toda a lista foi limpa com sucesso.');
+                    showToast('A lista foi limpa com sucesso.');
                 }
             );
         }
@@ -1243,7 +1187,7 @@
         function copyForSheets() {
             const items = currentData.filter(d => currentSubTab === 'all' ? true : (currentSubTab === 'posted' ? d.posted : !d.posted));
             if (items.length === 0) {
-                showToast('Nenhum dado visível para copiar!', 'warning');
+                showToast('Nenhum dado para copiar!', 'warning');
                 return;
             }
 
@@ -1255,7 +1199,7 @@
             });
 
             copyToClipboard(tsv);
-            showToast('Dados e legendas copiados! Pode dar Ctrl+V no Google Sheets.');
+            showToast('Dados e legendas copiados para o Google Sheets.');
         }
 
         function copyOnlyLinks() {
@@ -1266,7 +1210,7 @@
                 return;
             }
             copyToClipboard(links);
-            showToast('Links de oferta copiados!');
+            showToast('Links copiados para a área de transferência!');
         }
 
         function exportToExcel() {
@@ -1292,8 +1236,8 @@
             const worksheet = XLSX.utils.json_to_sheet(exportFormatted);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Shopee Afiliados");
-            XLSX.writeFile(workbook, "Shopee_Afiliados_Formatado.xlsx");
-            showToast('Planilha Excel (.xlsx) baixada!');
+            XLSX.writeFile(workbook, "Shopee_Afiliados.xlsx");
+            showToast('Planilha Excel baixada com sucesso!');
         }
 
         function copyToClipboard(text) {
@@ -1323,7 +1267,7 @@
             const toastIcon = document.getElementById('toastIcon');
 
             toastMessage.innerText = message;
-            toastIcon.className = type === 'warning' ? "fas fa-exclamation-circle text-amber-400 text-lg" : "fas fa-check-circle text-emerald-400 text-lg";
+            toastIcon.className = type === 'warning' ? "fas fa-exclamation-circle text-amber-400 text-base shrink-0" : "fas fa-check-circle text-emerald-400 text-base shrink-0";
 
             toast.classList.remove('translate-y-[-100px]', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
