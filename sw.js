@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shopee-converter-v1';
+const CACHE_NAME = 'shopee-converter-v2';
 
 self.addEventListener('install', (e) => {
     self.skipWaiting();
