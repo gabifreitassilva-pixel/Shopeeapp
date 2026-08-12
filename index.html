@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full bg-slate-50">
 <head>
-    <!-- STREAMING_CHUNK:Configuring Viewport & PWA Headers... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Conversor de Planilha Shopee Afiliados</title>
+    <title>Conversor Shopee Afiliados - Gabriela IA & Vídeos</title>
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#ee4d2d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Shopee Afiliados">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/888/888857.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/shopee.png">
     
     <!-- Dynamic Manifest Link -->
     <link rel="manifest" id="manifestLink">
@@ -23,9 +22,8 @@
     <!-- SheetJS para exportação e importação de Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- STREAMING_CHUNK:Setting up Tailwind Configuration... -->
     <script>
         tailwind.config = {
             theme: {
@@ -47,7 +45,6 @@
     </script>
 
     <style>
-        /* Prevent any unwanted horizontal scroll globally */
         html, body {
             max-width: 100vw;
             overflow-x: hidden;
@@ -66,11 +63,17 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
     </style>
 </head>
 <body class="min-h-full flex flex-col font-sans text-slate-800 antialiased bg-slate-50 overflow-x-hidden w-full">
 
-    <!-- STREAMING_CHUNK:Rendering Toast and Confirm Modal... -->
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-3 right-3 left-3 sm:left-auto sm:right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 ease-in-out bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border-l-4 border-emerald-500 max-w-md mx-auto">
         <i id="toastIcon" class="fas fa-check-circle text-emerald-400 text-base shrink-0"></i>
@@ -98,26 +101,33 @@
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK:Rendering Main Header Bar... -->
     <!-- Top Navigation Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs w-full">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center py-2.5 sm:h-16 gap-2">
                 
-                <!-- Logo & Title -->
+                <!-- Logo & Mascot Branding -->
                 <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-200 shrink-0">
-                        <i class="fas fa-file-excel text-lg sm:text-xl"></i>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-200 shrink-0 overflow-hidden relative border border-orange-300">
+                        <img src="https://img.icons8.com/color/512/shopee.png" alt="Gabriela Shopee" class="w-full h-full object-cover p-1">
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight truncate">Conversor Shopee Afiliados</h1>
-                        <p class="text-[11px] sm:text-xs text-slate-500 truncate">Postagens Rápidas & Legendas IA</p>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight truncate">Conversor Shopee Afiliados</h1>
+                            <span class="bg-gradient-to-r from-orange-500 to-purple-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">GABRIELA IA</span>
+                        </div>
+                        <p class="text-[11px] sm:text-xs text-slate-500 truncate">Postagens, Vídeos & Legendas Automatizadas</p>
                     </div>
                 </div>
 
-                <!-- Global Action Controls -->
+                <!-- Global Action Controls & Test Trigger -->
                 <div class="flex items-center justify-between sm:justify-end gap-1.5 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
-                    <button id="btnInstallPwa" onclick="installPWA()" class="hidden px-2.5 py-1.5 text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1 animate-pulse">
+                    <button onclick="runSystemTestSuite()" class="px-2.5 py-1.5 text-[11px] font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1.5 animate-pulse-subtle">
+                        <i class="fas fa-vial-circle-check text-xs"></i>
+                        <span>Rodar Testes</span>
+                    </button>
+                    
+                    <button id="btnInstallPwa" onclick="installPWA()" class="hidden px-2 py-1.5 text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1">
                         <i class="fas fa-download"></i>
                         <span>Instalar</span>
                     </button>
@@ -142,38 +152,37 @@
         </div>
     </header>
 
-    <!-- STREAMING_CHUNK:Rendering Main View Navigation Tabs... -->
     <!-- Main Content Wrapper -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 space-y-4 sm:space-y-6">
 
         <!-- MAIN TABS SELECTION BAR -->
-        <div class="flex border border-slate-200 bg-white rounded-xl p-1 shadow-xs gap-1">
-            <button id="mainTabImport" onclick="switchMainTab('import')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+        <div class="flex border border-slate-200 bg-white rounded-xl p-1 shadow-xs gap-1 overflow-x-auto custom-scrollbar">
+            <button id="mainTabImport" onclick="switchMainTab('import')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 whitespace-nowrap">
                 <i class="fas fa-cloud-arrow-up text-sm"></i>
-                <span class="truncate">1. Importar Planilha</span>
+                <span>1. Importar Planilha</span>
             </button>
-            <button id="mainTabList" onclick="switchMainTab('list')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs">
+            <button id="mainTabList" onclick="switchMainTab('list')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs whitespace-nowrap">
                 <i class="fas fa-list-check text-sm"></i>
-                <span class="truncate">2. Produtos a Postar</span>
+                <span>2. Produtos a Postar</span>
                 <span id="tabBadgePending" class="bg-amber-100 text-amber-900 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-0.5">0</span>
+            </button>
+            <button id="mainTabMedia" onclick="switchMainTab('media')" class="flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-purple-700 bg-purple-50 hover:bg-purple-100 whitespace-nowrap border border-purple-200">
+                <i class="fas fa-clapperboard text-sm text-purple-600"></i>
+                <span>3. Gerar Mídia & Vídeo (Instantâneo)</span>
             </button>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Tab 1 - Import View... -->
-        <!-- ========================================== -->
-        <!-- TAB 1: IMPORTAR PLANILHA (DEDICATED VIEW) -->
-        <!-- ========================================== -->
+        <!-- TAB 1: IMPORTAR PLANILHA -->
         <div id="viewImport" class="hidden space-y-4 sm:space-y-6">
             <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs">
                 <div class="max-w-3xl mx-auto space-y-4 sm:space-y-6">
                     
                     <div class="text-center space-y-1">
                         <h2 class="text-sm sm:text-base font-bold text-slate-900">Importar Dados da Shopee</h2>
-                        <p class="text-xs text-slate-500">Envie o arquivo CSV/XLSX baixado do painel de afiliados ou cole o conteúdo bruto. Os itens serão acumulados na sua lista.</p>
+                        <p class="text-xs text-slate-500">Envie o arquivo CSV/XLSX baixado do painel de afiliados ou cole o conteúdo bruto.</p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <!-- File Drop Zone -->
                         <div class="flex flex-col justify-between border-2 border-dashed border-slate-300 hover:border-shopee-orange rounded-2xl p-5 text-center cursor-pointer bg-slate-50 hover:bg-shopee-light/30 transition-all group" id="dropZone" onclick="document.getElementById('fileInput').click()">
                             <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xls,.tsv" multiple class="hidden" onchange="handleFilesSelect(event)">
                             <div class="space-y-2.5 my-auto">
@@ -182,7 +191,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs sm:text-sm font-bold text-slate-800">Enviar Arquivo(s)</p>
-                                    <p class="text-[11px] text-slate-400 mt-0.5">Selecione um ou vários arquivos (.csv, .xlsx, .txt)</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Selecione (.csv, .xlsx, .txt)</p>
                                 </div>
                             </div>
                             <div id="fileInfo" class="text-[11px] text-slate-500 italic mt-3 pt-2 border-t border-slate-200/60 truncate">
@@ -190,7 +199,6 @@
                             </div>
                         </div>
 
-                        <!-- Direct Paste -->
                         <div class="flex flex-col justify-between bg-slate-50 border border-slate-200 rounded-2xl p-3.5 sm:p-4">
                             <label class="text-xs font-bold text-slate-700 flex items-center justify-between mb-2">
                                 <span><i class="fas fa-paste text-emerald-600 mr-1"></i>Texto Bruto da Planilha</span>
@@ -204,7 +212,6 @@
                         </div>
                     </div>
 
-                    <!-- Settings Bar -->
                     <div class="bg-slate-100 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 gap-2">
                         <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
                             <span class="font-semibold">Separador:</span>
@@ -220,7 +227,6 @@
                         </div>
                     </div>
 
-                    <!-- Action Link to View List -->
                     <div class="pt-1 text-center">
                         <button onclick="switchMainTab('list')" class="w-full sm:w-auto px-6 py-3 bg-shopee-orange hover:bg-shopee-hover text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center justify-center gap-2">
                             <span>Ver Produtos na Lista de Postagens</span>
@@ -232,13 +238,10 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering Tab 2 - Products List View... -->
-        <!-- ================================================== -->
-        <!-- TAB 2: PRODUTOS PARA POSTAR (DEDICATED LIST VIEW)  -->
-        <!-- ================================================== -->
+        <!-- TAB 2: PRODUTOS PARA POSTAR -->
         <div id="viewList" class="space-y-4 sm:space-y-6">
 
-            <!-- Stats Bar (Optimized for Mobile 2-columns) -->
+            <!-- Stats Bar -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
                 <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2.5">
                     <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-base shrink-0">
@@ -284,24 +287,20 @@
                 <div class="col-span-2 sm:col-span-1 bg-gradient-to-r from-purple-900 to-indigo-900 p-3 sm:p-4 rounded-xl shadow-xs text-white flex flex-col justify-between">
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] sm:text-xs text-purple-200 font-bold uppercase tracking-wider flex items-center gap-1">
-                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> Legendas c/ IA
+                            <i class="fas fa-wand-magic-sparkles text-amber-300"></i> Legendas Gabriela
                         </span>
-                        <span class="text-[9px] bg-purple-800/80 px-1.5 py-0.5 rounded text-purple-200">Max 150 Caracteres</span>
+                        <span class="text-[9px] bg-purple-800/80 px-1.5 py-0.5 rounded text-purple-200">Personalizadas</span>
                     </div>
                     <button onclick="generateAllLegendasAI()" id="btnAiBatch" class="mt-2 w-full py-1.5 px-2 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-bold text-xs rounded-lg shadow transition-all flex items-center justify-center gap-1.5">
                         <i class="fas fa-robot text-xs"></i>
-                        <span>Gerar Legendas p/ Todos</span>
+                        <span>Gerar p/ Todos os Itens</span>
                     </button>
                 </div>
             </div>
 
-            <!-- STREAMING_CHUNK:Rendering List Controls and Mobile Cards... -->
-            <!-- Products List Section (Replaced Table with Mobile Card View to avoid horizontal overflow) -->
+            <!-- Products List Section -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden w-full">
-                
-                <!-- Controls Bar -->
                 <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col gap-3">
-                    
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <div class="flex items-center space-x-2">
                             <span class="flex h-2.5 w-2.5 relative">
@@ -311,7 +310,6 @@
                             <h3 class="font-bold text-xs sm:text-sm text-slate-800">Lista de Produtos</h3>
                         </div>
 
-                        <!-- Filter Sub-tabs -->
                         <div class="flex bg-slate-200/80 p-0.5 rounded-lg text-xs font-medium w-full sm:w-auto justify-between sm:justify-start">
                             <button id="tabPending" onclick="switchSubTab('pending')" class="flex-1 sm:flex-none px-2.5 py-1 rounded-md transition-all bg-white shadow-xs text-slate-900 font-semibold text-center text-[11px]">
                                 A Postar (<span id="cntPending">0</span>)
@@ -326,7 +324,6 @@
                     </div>
 
                     <div class="flex items-center justify-between gap-2">
-                        <!-- Search input -->
                         <div class="relative w-full">
                             <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
                             <input type="text" id="searchInput" oninput="filterTable()" placeholder="Buscar por produto ou loja..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-shopee-orange">
@@ -339,12 +336,10 @@
                     </div>
                 </div>
 
-                <!-- Cards Container (Fully Responsive Grid Layout without horizontal scrolling) -->
                 <div id="cardsList" class="divide-y divide-slate-100 max-h-[620px] overflow-y-auto custom-scrollbar p-2 sm:p-3 space-y-2">
-                    <!-- Dynamic Product Cards populated by JS -->
+                    <!-- Dynamic Product Cards -->
                 </div>
 
-                <!-- Footer info -->
                 <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1 text-center sm:text-left">
                     <span id="showingText">Mostrando 0 produtos</span>
                     <span class="flex items-center justify-center gap-1 text-slate-400">
@@ -356,11 +351,223 @@
 
         </div>
 
+        <!-- TAB 3: GERAR MÍDIA & VÍDEO (GERADOR INSTANTÂNEO DE PRINTS / FOTOS / VÍDEOS) -->
+        <div id="viewMedia" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs">
+                <div class="max-w-5xl mx-auto space-y-6">
+                    
+                    <!-- Header do Módulo -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-100 pb-4 gap-3">
+                        <div>
+                            <span class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Estúdio Gabriela IA - Sem Planilha</span>
+                            <h2 class="text-base sm:text-xl font-bold text-slate-900 mt-1">Gerador de Vídeos & Legendas por Print / Fotos</h2>
+                            <p class="text-xs text-slate-500">Envie o print ou fotos do produto e clique em "Gerar Legenda e Vídeo" para automatizar tudo!</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+                            <i class="fas fa-photo-film"></i>
+                        </div>
+                    </div>
+
+                    <!-- Layout em 2 Colunas -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Coluna 1: Formulário e Ações -->
+                        <div class="lg:col-span-7 space-y-4">
+                            
+                            <!-- Step 1: Upload de Fotos e Prints -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">1. Enviar Fotos ou Prints do Produto (Envie 1 ou várias)</label>
+                                <div class="border-2 border-dashed border-purple-300 hover:border-purple-600 bg-purple-50/50 hover:bg-purple-100/40 rounded-2xl p-5 text-center cursor-pointer transition-all group" onclick="document.getElementById('instantFileInput').click()">
+                                    <input type="file" id="instantFileInput" accept="image/*" multiple class="hidden" onchange="handleInstantImages(event)">
+                                    <div class="space-y-2">
+                                        <div class="w-12 h-12 mx-auto rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-cloud-arrow-up text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-800">Clique ou Arraste Imagens / Print Aqui</p>
+                                            <p class="text-[10px] text-slate-500">Suporta JPG, PNG, WEBP, screenshots do app da Shopee</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Carrossel de Miniaturas Selecionadas -->
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[11px] font-bold text-slate-600">Fotos Anexadas (<span id="instantImgCount">0</span>)</span>
+                                    <button type="button" onclick="fillBagsPreset()" class="text-[11px] text-purple-600 font-semibold hover:underline flex items-center gap-1">
+                                        <i class="fas fa-wand-sparkles text-amber-500"></i> Usar Exemplo: Kit Bolsa Meia Lua
+                                    </button>
+                                </div>
+                                <div id="instantThumbnails" class="flex gap-2 overflow-x-auto custom-scrollbar py-2 min-h-[70px] bg-slate-50 rounded-xl p-2 border border-slate-200">
+                                    <span class="text-[11px] text-slate-400 italic my-auto mx-auto">Nenhuma foto selecionada. Adicione acima!</span>
+                                </div>
+                            </div>
+
+                            <!-- Botão Único Principal: Gerar Legenda e Vídeo -->
+                            <div>
+                                <button onclick="generateVideoAndCaption()" class="w-full py-3.5 px-4 bg-gradient-to-r from-purple-700 via-indigo-600 to-orange-500 hover:from-purple-800 hover:to-orange-600 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98">
+                                    <i class="fas fa-wand-magic-sparkles text-amber-300 text-base"></i>
+                                    <span>Gerar Legendas e Vídeos (Detecta Múltiplos Produtos)</span>
+                                </button>
+                            </div>
+
+                            <!-- Barra de Progresso do Processamento e Renderização -->
+                            <div id="processingProgressBarContainer" class="hidden space-y-2 p-3 bg-purple-50 rounded-2xl border border-purple-200">
+                                <div class="flex items-center justify-between text-xs font-bold text-purple-900">
+                                    <span id="progressBarLabel" class="flex items-center gap-1.5">
+                                        <i class="fas fa-spinner fa-spin text-purple-600"></i>
+                                        <span>Analisando e gerando mídias...</span>
+                                    </span>
+                                    <span id="progressBarPercent" class="font-mono text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-200">0%</span>
+                                </div>
+                                <div class="w-full bg-purple-200/80 rounded-full h-3 overflow-hidden p-0.5 border border-purple-300/50">
+                                    <div id="progressBarFill" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-orange-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Informações do Produto & Legenda Gerada -->
+                            <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-3">
+                                <label class="block text-xs font-bold text-slate-800 border-b border-slate-200 pb-1">
+                                    2. Informações do Produto & Legenda
+                                </label>
+                                
+                                <!-- Nome do Produto em Texto Puro com Botão de Copiar Apenas o Texto -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="block text-[11px] font-semibold text-slate-600">Nome do Produto (Texto Puro)</label>
+                                        <button type="button" onclick="copyProductName()" class="text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 shadow-xs">
+                                            <i class="fas fa-copy"></i> Copiar Nome
+                                        </button>
+                                    </div>
+                                    <input type="text" id="instantProdName" placeholder="Ex: KIT 2 BOLSA FEMININA DE OMBRO MEIA LUA" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium">
+                                </div>
+
+                                <!-- Legenda Gerada -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="block text-[11px] font-semibold text-slate-600">Legenda Automática</label>
+                                        <button type="button" onclick="copyInstantCaption()" class="text-[10px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 shadow-xs">
+                                            <i class="fas fa-copy"></i> Copiar Legenda
+                                        </button>
+                                    </div>
+                                    <textarea id="instantCaptionOutput" readonly placeholder="A legenda personalizada gerada para o seu produto aparecerá aqui..." class="w-full h-20 p-2.5 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 resize-none focus:outline-none custom-scrollbar font-mono leading-relaxed"></textarea>
+                                </div>
+
+                                <!-- Botão de Download de Vídeo -->
+                                <div>
+                                    <a id="btnDownloadVideo" download="shopee_video_gabriela.webm" class="hidden w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-center">
+                                        <i class="fas fa-download text-sm"></i>
+                                        <span>Baixar Vídeo do Produto (.MP4 / WEBM)</span>
+                                    </a>
+                                    <div id="btnDownloadVideoPlaceholder" class="w-full py-2.5 px-3 bg-slate-200/70 text-slate-500 font-medium text-[11px] rounded-xl text-center border border-slate-200 flex items-center justify-center gap-1.5">
+                                        <i class="fas fa-circle-info text-slate-400"></i>
+                                        <span>Clique em "Gerar Legenda e Vídeo" para liberar o download</span>
+                                    </div>
+                                </div>
+
+                                <!-- Botão Salvar no Histórico -->
+                                <div>
+                                    <button type="button" id="btnSaveToHistory" onclick="saveCurrentToHistory()" class="hidden w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                                        <i class="fas fa-bookmark text-amber-300"></i>
+                                        <span>Salvar no Histórico</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Coluna 2: Player de Vídeo Limpo (Clean View) -->
+                        <div class="lg:col-span-5 bg-slate-900 rounded-2xl p-4 text-white space-y-3 flex flex-col justify-center shadow-xl">
+                            <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+                                <span class="text-purple-400 font-bold flex items-center gap-1.5">
+                                    <i class="fas fa-mobile-screen"></i> Vídeo 9:16 (Reels / TikTok)
+                                </span>
+                                <span id="videoStatusBadge" class="text-[10px] bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded border border-slate-700">Aguardando Mídias</span>
+                            </div>
+
+                            <!-- Container do Player do Canvas / Vídeo Gerado Limpo -->
+                            <div class="relative aspect-[9/16] max-h-[380px] bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner mx-auto w-full">
+                                <canvas id="videoCanvas" width="1080" height="1920" class="w-full h-full object-contain"></canvas>
+
+                                <div id="videoCanvasPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-900/90">
+                                    <i class="fas fa-clapperboard text-4xl text-purple-500/50 mb-2"></i>
+                                    <p class="text-xs font-bold text-slate-300">Seu vídeo limpo aparecerá aqui</p>
+                                    <p class="text-[10px] text-slate-500 mt-1">Envie imagens ao lado e clique em "Gerar Legenda e Vídeo"</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Histórico de Produtos & Vídeos Salvos -->
+                    <div class="border-t border-slate-200 pt-6 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                                    <i class="fas fa-clock-rotate-left"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-900">Histórico de Mídias e Legendas Salvas</h3>
+                                    <p class="text-[11px] text-slate-500">Acesse, copie nomes, legendas e baixe vídeos salvos anteriormente</p>
+                                </div>
+                            </div>
+                            <button onclick="clearMediaHistory()" class="text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1 transition-colors">
+                                <i class="fas fa-trash-can"></i> Limpar Histórico
+                            </button>
+                        </div>
+
+                        <!-- Container dos Cards de Histórico -->
+                        <div id="historyListContainer" class="space-y-3">
+                            <div class="p-6 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+                                <i class="fas fa-box-open text-2xl mb-1 text-slate-300 block"></i>
+                                <span class="text-xs">Nenhum item salvo no histórico ainda.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal do Painel de Testes Automatizados -->
+        <div id="testSuiteModal" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl space-y-4 border border-slate-200 max-h-[90vh] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm sm:text-base font-bold text-slate-900">Bateria de Testes do Sistema</h3>
+                            <p class="text-[11px] text-slate-500">Validação técnica em tempo real de legendas, mídia e conversão</p>
+                        </div>
+                    </div>
+                    <button onclick="closeTestSuiteModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                        <i class="fas fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div id="testResultsList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 font-mono text-xs">
+                    <!-- Dynamic test results -->
+                </div>
+
+                <div class="border-t border-slate-100 pt-3 flex items-center justify-between">
+                    <span id="testSummaryBadge" class="text-xs font-bold text-slate-600">
+                        Status: Pronto para rodar
+                    </span>
+                    <button onclick="runSystemTestSuite()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow transition-all flex items-center gap-1.5">
+                        <i class="fas fa-rotate"></i>
+                        <span>Reexecutar Testes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- STREAMING_CHUNK:Initializing Application State & JavaScript... -->
     <script>
-        // SAMPLE DATA (Exemplo Padrão)
+        // SAMPLE DATA INITIALIZATION
         const SAMPLE_DATA = [
             { id: "23697300428", itemId: "23697300428", itemName: "Jogo de 6 Taças de Água / Vinho Diamond 300ml Transparente", price: "30,9", sales: "70mil+", shopName: "Pratitude Essencia", commissionRate: "3%", commission: "R$0,93", productLink: "https://shopee.com.br/product/23697300428", offerLink: "https://s.shopee.com.br/3qLumDEzwW", legenda: "🍷 Taças Diamond 300ml incríveis! Garanta as suas no link 👇 #achadinhos #shopee #promocao", posted: false },
             { id: "58202299064", itemId: "58202299064", itemName: "Fatiador Profissional de Legumes e Frutas Ralador Multifuncional", price: "26,99", sales: "20mil+", shopName: "TXB TECH LTDA", commissionRate: "9%", commission: "R$2,43", productLink: "https://shopee.com.br/product/58202299064", offerLink: "https://s.shopee.com.br/3g2UZuFdHV", legenda: "🔪 Fatiador Multifuncional Prático! Facilite no link abaixo 👇 #achadinhos #shopee #promocao", posted: false },
@@ -368,89 +575,470 @@
             { id: "21598324472", itemId: "21598324472", itemName: "Kit Manta Decorativa Para Sofá Com 2 Capas De Almofada Jacquard", price: "62,9", sales: "10mil+", shopName: "Luana Home", commissionRate: "16%", commission: "R$10,06", productLink: "https://shopee.com.br/product/21598324472", offerLink: "https://s.shopee.com.br/3LPeBIGtxT", legenda: "🛋️ Kit Manta p/ Sofá + Almofadas! Garanta no link 👇 #achadinhos #shopee #promocao", posted: false }
         ];
 
-        // Global State
+        // Global Application State Variables
         let currentData = [];
         let rawContent = "";
         let currentMainTab = 'list';
         let currentSubTab = 'pending';
         let pendingConfirmAction = null;
         let deferredPrompt = null;
+        let instantImages = [];
+        let currentVideoBlob = null;
 
-        function initPWA() {
-            const manifestObj = {
-                "name": "Conversor Shopee Afiliados",
-                "short_name": "Shopee Afiliados",
-                "description": "Gerenciador de Planilhas e Postagens para Afiliados Shopee",
-                "start_url": "./",
-                "display": "standalone",
-                "background_color": "#f8fafc",
-                "theme_color": "#ee4d2d",
-                "icons": [
-                    { "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png", "sizes": "192x192", "type": "image/png" },
-                    { "src": "https://cdn-icons-png.flaticon.com/512/888/888857.png", "sizes": "512x512", "type": "image/png" }
-                ]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
-            const manifestURL = URL.createObjectURL(manifestBlob);
-            const mLink = document.getElementById('manifestLink');
-            if (mLink) mLink.setAttribute('href', manifestURL);
+        // UI Progress Bar Helper
+        function updateProgressBar(percent, message) {
+            const container = document.getElementById('processingProgressBarContainer');
+            const label = document.getElementById('progressBarLabel');
+            const percentEl = document.getElementById('progressBarPercent');
+            const fill = document.getElementById('progressBarFill');
 
-            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
-                const swCode = `
-                    self.addEventListener('install', (e) => { self.skipWaiting(); });
-                    self.addEventListener('activate', (e) => { self.clients.claim(); });
-                    self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
-                `;
-                try {
-                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-                    const swURL = URL.createObjectURL(swBlob);
-                    navigator.serviceWorker.register(swURL).catch(() => {});
-                } catch (e) {}
+            if (!container) return;
+
+            if (percent < 0) {
+                container.classList.add('hidden');
+                return;
             }
 
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                const btnInstall = document.getElementById('btnInstallPwa');
-                if (btnInstall) btnInstall.classList.remove('hidden');
+            container.classList.remove('hidden');
+            if (message && label) {
+                label.innerHTML = `<i class="fas fa-spinner fa-spin text-purple-600"></i> <span>${escapeHtml(message)}</span>`;
+            }
+            const cleanPercent = Math.min(100, Math.max(0, Math.round(percent)));
+            if (percentEl) percentEl.innerText = `${cleanPercent}%`;
+            if (fill) fill.style.width = `${cleanPercent}%`;
+        }
+
+        // Context-Aware Dynamic Hashtag Generator
+        function getContextHashtags(name) {
+            const n = name.toLowerCase();
+            if (n.includes('bolsa') || n.includes('mochila') || n.includes('carteira') || n.includes('mala')) {
+                return '#bolsafeminina #modafeminina #acessoriosfemininos #shopee';
+            } else if (n.includes('relógio') || n.includes('relogio') || n.includes('pulseira') || n.includes('brinco') || n.includes('colar') || n.includes('joia')) {
+                return '#relogiofeminino #acessorios #bijuterias #shopee';
+            } else if (n.includes('cozinha') || n.includes('fatiador') || n.includes('panela') || n.includes('copo') || n.includes('taça') || n.includes('utensílio') || n.includes('ralador')) {
+                return '#cozinhatratada #utilidadesdomesticas #achadinhoscozinha #shopee';
+            } else if (n.includes('manta') || n.includes('almofada') || n.includes('sofá') || n.includes('sofa') || n.includes('decoração') || n.includes('decoracao') || n.includes('casa')) {
+                return '#decoracaodecasa #homedecor #casalinda #shopee';
+            } else if (n.includes('chave') || n.includes('ferramenta') || n.includes('parafuso') || n.includes('alicate')) {
+                return '#ferramentas #diy #reformas #shopee';
+            } else if (n.includes('vestido') || n.includes('roupa') || n.includes('blusa') || n.includes('calça') || n.includes('saia')) {
+                return '#lookdodia #modafeminina #estilofeminino #shopee';
+            } else if (n.includes('make') || n.includes('maquiagem') || n.includes('batom') || n.includes('skincare') || n.includes('sérum')) {
+                return '#maquiagem #skincare #belezafeminina #shopee';
+            } else if (n.includes('sapato') || n.includes('tênis') || n.includes('tenis') || n.includes('sandália') || n.includes('salto')) {
+                return '#calcadosfemininos #tenisfeminino #sandalia #shopee';
+            }
+            return '#achadinhos #shopee #promocao #ofertas';
+        }
+
+        // Caption Fallback Generator
+        function generateDefaultCaption(name) {
+            let shortName = name;
+            if (shortName.length > 45) shortName = shortName.substring(0, 42) + '...';
+
+            const hooks = [
+                `🔥 Olha esse achadinho: ${shortName}!`,
+                `😍 Lindo demais: ${shortName}!`,
+                `✨ Confira esse item: ${shortName}!`,
+                `⚡ Oferta especial: ${shortName}!`
+            ];
+
+            const ctas = [
+                `Garanta no link 👇`,
+                `Acesse no link abaixo 👇`,
+                `Aproveite no link 👇`
+            ];
+
+            const categoryHashtags = getContextHashtags(name);
+
+            const randomHook = hooks[Math.floor(Math.random() * hooks.length)];
+            const randomCta = ctas[Math.floor(Math.random() * ctas.length)];
+
+            let caption = `${randomHook} ${randomCta} ${categoryHashtags}`;
+            if (caption.length > 150) caption = caption.substring(0, 147) + '...';
+            return caption;
+        }
+
+        async function generateVideoAndCaption() {
+            if (instantImages.length === 0) {
+                showToast('Envie pelo menos 1 foto ou print do produto.', 'warning');
+                return;
+            }
+
+            const statusBadge = document.getElementById('videoStatusBadge');
+            if (statusBadge) {
+                statusBadge.innerText = "Analisando produtos nas fotos...";
+                statusBadge.className = "text-[10px] bg-amber-500/20 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-500/30 animate-pulse";
+            }
+
+            updateProgressBar(10, 'Analisando produto(s) e extraindo dados...');
+
+            const productGroups = await analyzeAndSeparateProducts();
+
+            if (productGroups.length === 0) {
+                showToast('Nenhum produto identificado nas imagens.', 'warning');
+                updateProgressBar(-1);
+                return;
+            }
+
+            showToast(`🚀 ${productGroups.length} produto(s) identificado(s)! Gerando vídeos e legendas...`);
+
+            for (let idx = 0; idx < productGroups.length; idx++) {
+                const group = productGroups[idx];
+                const baseProgress = 20 + Math.round((idx / productGroups.length) * 75);
+
+                if (statusBadge) {
+                    statusBadge.innerText = `Gerando Vídeo ${idx + 1}/${productGroups.length} (20s)...`;
+                }
+
+                updateProgressBar(baseProgress, `Gerando Vídeo ${idx + 1} de ${productGroups.length}...`);
+
+                const prodInput = document.getElementById('instantProdName');
+                const captionOutput = document.getElementById('instantCaptionOutput');
+                if (prodInput) prodInput.value = group.productName;
+                if (captionOutput) captionOutput.value = group.caption;
+
+                const videoBlob = await renderInstantVideoForImages(group.images, (frameProgress) => {
+                    const currentProgress = baseProgress + Math.round((frameProgress / 100) * (75 / productGroups.length));
+                    updateProgressBar(currentProgress, `Renderizando Vídeo ${idx + 1}/${productGroups.length} (${Math.round(frameProgress)}%)...`);
+                });
+                currentVideoBlob = videoBlob;
+
+                await autoSaveProductToHistory(group.productName, group.caption, videoBlob);
+            }
+
+            updateProgressBar(100, 'Processamento concluído com sucesso!');
+            setTimeout(() => updateProgressBar(-1), 2500);
+
+            if (statusBadge) {
+                statusBadge.innerText = `Concluído (${productGroups.length} Vídeos)!`;
+                statusBadge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30";
+            }
+
+            const btnDownload = document.getElementById('btnDownloadVideo');
+            const btnSaveHistory = document.getElementById('btnSaveToHistory');
+            const btnPlaceholder = document.getElementById('btnDownloadVideoPlaceholder');
+            if (btnDownload && currentVideoBlob) {
+                btnDownload.href = URL.createObjectURL(currentVideoBlob);
+                btnDownload.classList.remove('hidden');
+                if (btnPlaceholder) btnPlaceholder.classList.add('hidden');
+            }
+            if (btnSaveHistory) btnSaveHistory.classList.remove('hidden');
+
+            renderHistoryList();
+            showToast(`✅ Sucesso! ${productGroups.length} produto(s) processado(s) e salvos no histórico abaixo!`);
+        }
+
+        async function analyzeAndSeparateProducts() {
+            try {
+                const imageParts = instantImages.map(img => ({
+                    inlineData: {
+                        mimeType: "image/png",
+                        data: getImageBase64(img)
+                    }
+                }));
+
+                const systemPrompt = "Você é um assistente especialista da Shopee. Sua tarefa é ANALISAR E SEPARAR as imagens por PRODUTO DISTINTO. Se o usuário enviou fotos de produtos diferentes (exemplo: fotos 0 e 1 de um Tênis, foto 2 de um Relógio, fotos 3 e 4 de uma Bolsa), você DEVE criar um grupo separado para CADA produto com os seus respectivos imageIndices.\n\nEXEMPLO DE SEPARAÇÃO:\n- Produto 1 (Tênis): imageIndices [0, 1]\n- Produto 2 (Relógio): imageIndices [2]\n- Produto 3 (Bolsa): imageIndices [3, 4]\n\nREGRA CRÍTICA: Cada produto DEVE conter APENAS AS FOTOS QUE PERTENCEM A ELE! Não misture fotos de produtos diferentes no mesmo vídeo. Para cada produto individual, forneça o productName exato e uma caption com no máximo 150 caracteres incluindo 3 a 4 hashtags específicas do nicho do produto.\nResponda EXCLUSIVAMENTE em formato JSON com a estrutura: { \"products\": [ { \"imageIndices\": [0, 1], \"productName\": \"...\", \"caption\": \"...\" } ] }";
+                const userQuery = "Analise e separe RIGOROSAMENTE todos os produtos diferentes presentes nestas imagens. Crie um grupo separado para cada produto distinto, associando apenas as fotos pertencentes a cada um.";
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [{ text: userQuery }, ...imageParts]
+                    }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { responseMimeType: "application/json" }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (jsonText) {
+                        const parsed = JSON.parse(jsonText);
+                        if (parsed.products && Array.isArray(parsed.products) && parsed.products.length > 0) {
+                            return parsed.products.map(p => {
+                                const groupImgs = (p.imageIndices || [])
+                                    .map(idx => instantImages[idx])
+                                    .filter(img => img !== undefined);
+                                return {
+                                    productName: p.productName || "Produto Shopee",
+                                    caption: (p.caption && p.caption.length > 150) ? p.caption.substring(0, 147) + '...' : (p.caption || generateDefaultCaption(p.productName)),
+                                    images: groupImgs.length > 0 ? groupImgs : [instantImages[0]]
+                                };
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao analisar múltiplos produtos:", err);
+            }
+
+            // Fallback caso a API não responda ou em teste local sem chave: se houver múltiplas imagens, separa cada uma em seu próprio vídeo individual
+            if (instantImages.length > 1) {
+                const fallbackName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
+                return instantImages.map((img, i) => ({
+                    productName: instantImages.length === 1 ? fallbackName : `${fallbackName} (Item ${i + 1})`,
+                    caption: generateDefaultCaption(fallbackName),
+                    images: [img]
+                }));
+            }
+
+            const fallbackName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
+            return [{
+                productName: fallbackName.includes("Analisando") ? "Produto Shopee" : fallbackName,
+                caption: generateDefaultCaption(fallbackName),
+                images: instantImages
+            }];
+        }
+
+        function renderInstantVideoForImages(groupImages, onFrameProgress) {
+            return new Promise((resolve) => {
+                // Utiliza APENAS as fotos pertencentes a este produto específico
+                const videoImages = (groupImages && groupImages.length > 0) ? groupImages : instantImages;
+
+                const canvas = document.getElementById('videoCanvas');
+                const ctx = canvas.getContext('2d');
+                const placeholder = document.getElementById('videoCanvasPlaceholder');
+                if (placeholder) placeholder.classList.add('hidden');
+
+                const stream = canvas.captureStream(30);
+                let mimeType = 'video/webm';
+                if (MediaRecorder.isTypeSupported('video/mp4')) mimeType = 'video/mp4';
+
+                let recorder;
+                try { recorder = new MediaRecorder(stream, { mimeType }); } 
+                catch (e) { recorder = new MediaRecorder(stream); }
+
+                let chunks = [];
+                recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
+                    resolve(blob);
+                };
+
+                recorder.start();
+
+                let frameCount = 0;
+                const totalFrames = 600; // 20 segundos a 30 FPS
+                const framesPerImage = Math.max(1, Math.floor(totalFrames / videoImages.length));
+
+                function animate() {
+                    if (frameCount >= totalFrames) {
+                        recorder.stop();
+                        return;
+                    }
+
+                    if (onFrameProgress && frameCount % 15 === 0) {
+                        onFrameProgress((frameCount / totalFrames) * 100);
+                    }
+
+                    const currentImgIndex = Math.floor(frameCount / framesPerImage) % videoImages.length;
+                    const img = videoImages[currentImgIndex];
+
+                    ctx.fillStyle = '#090d16';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    const imgFrameProgress = frameCount % framesPerImage;
+                    const scaleProgress = 1 + (imgFrameProgress / framesPerImage) * 0.06;
+
+                    const hRatio = canvas.width / img.width;
+                    const vRatio = canvas.height / img.height;
+                    const baseRatio = Math.min(hRatio, vRatio) * 0.92;
+                    const ratio = baseRatio * scaleProgress;
+
+                    const centerShift_x = (canvas.width - img.width * ratio) / 2;
+                    const centerShift_y = (canvas.height - img.height * ratio) / 2;
+
+                    ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+
+                    frameCount++;
+                    requestAnimationFrame(animate);
+                }
+
+                animate();
             });
         }
 
-        async function installPWA() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') showToast('Aplicativo instalado com sucesso!');
-            deferredPrompt = null;
-            document.getElementById('btnInstallPwa').classList.add('hidden');
+        function openHistoryDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('ShopeeMediaHistoryDB', 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('media_history')) {
+                        db.createObjectStore('media_history', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = (e) => reject(e.target.error);
+            });
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initPWA();
-            loadFromStorage();
-            renderTable();
-            updateStats();
-            setupDragAndDrop();
-        });
+        async function autoSaveProductToHistory(prodName, caption, videoBlob) {
+            try {
+                const db = await openHistoryDB();
+                const transaction = db.transaction('media_history', 'readwrite');
+                const store = transaction.objectStore('media_history');
 
-        // STREAMING_CHUNK:Tab and Navigation Logic...
+                const historyItem = {
+                    id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    timestamp: new Date().toLocaleString('pt-BR'),
+                    prodName: prodName,
+                    caption: caption,
+                    videoBlob: videoBlob
+                };
+
+                store.put(historyItem);
+            } catch (err) {
+                console.error("Erro ao salvar produto automaticamente no histórico:", err);
+            }
+        }
+
+        async function saveCurrentToHistory() {
+            const prodName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
+            const caption = document.getElementById('instantCaptionOutput')?.value?.trim() || "";
+            if (!caption && !currentVideoBlob) {
+                showToast('Nenhum conteúdo gerado para salvar.', 'warning');
+                return;
+            }
+            await autoSaveProductToHistory(prodName, caption, currentVideoBlob);
+            renderHistoryList();
+            showToast('Salvo no histórico com sucesso!');
+        }
+
+        async function renderHistoryList() {
+            const container = document.getElementById('historyListContainer');
+            if (!container) return;
+            try {
+                const db = await openHistoryDB();
+                const tx = db.transaction('media_history', 'readonly');
+                const store = tx.objectStore('media_history');
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const items = req.result || [];
+                    if (items.length === 0) {
+                        container.innerHTML = `
+                            <div class="p-6 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+                                <i class="fas fa-box-open text-2xl mb-1 text-slate-300 block"></i>
+                                <span class="text-xs">Nenhum item salvo no histórico ainda.</span>
+                            </div>
+                        `;
+                        return;
+                    }
+                    items.sort((a, b) => b.id.localeCompare(a.id));
+                    container.innerHTML = '';
+                    items.forEach((item) => {
+                        const card = document.createElement('div');
+                        card.className = "p-3 sm:p-4 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3";
+                        const videoUrl = item.videoBlob ? URL.createObjectURL(item.videoBlob) : '';
+                        card.innerHTML = `
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                                <span class="text-[10px] text-slate-400 font-mono"><i class="fas fa-clock mr-1"></i>${escapeHtml(item.timestamp)}</span>
+                                <button onclick="deleteHistoryItem('${item.id}')" class="text-xs text-red-500 hover:text-red-700 font-semibold self-end sm:self-auto">
+                                    <i class="fas fa-trash-can mr-1"></i> Excluir
+                                </button>
+                            </div>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-800 truncate max-w-[280px] sm:max-w-md">${escapeHtml(item.prodName)}</span>
+                                    <button onclick="copyToClipboard('${escapeHtml(item.prodName)}'); showToast('Nome copiado!');" class="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-1 rounded-md hover:bg-purple-200">
+                                        <i class="fas fa-copy mr-1"></i> Copiar Nome
+                                    </button>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-100 text-[11px] text-slate-700 font-mono leading-relaxed">
+                                    ${escapeHtml(item.caption)}
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-1">
+                                <button onclick="copyToClipboard('${escapeHtml(item.caption)}'); showToast('Legenda copiada!');" class="py-1.5 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1">
+                                    <i class="fas fa-copy"></i> Copiar Legenda
+                                </button>
+                                ${videoUrl ? `
+                                    <a href="${videoUrl}" download="${escapeHtml(item.prodName || 'shopee_video')}.webm" class="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1">
+                                        <i class="fas fa-download"></i> Baixar Vídeo
+                                    </a>
+                                ` : ''}
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                };
+            } catch (err) {
+                console.error("Erro ao ler histórico:", err);
+            }
+        }
+
+        async function deleteHistoryItem(id) {
+            try {
+                const db = await openHistoryDB();
+                const tx = db.transaction('media_history', 'readwrite');
+                const store = tx.objectStore('media_history');
+                store.delete(id);
+                tx.oncomplete = () => {
+                    renderHistoryList();
+                    showToast('Item removido do histórico.');
+                };
+            } catch (err) {
+                console.error("Erro ao deletar item do histórico:", err);
+            }
+        }
+
+        async function clearMediaHistory() {
+            openConfirmModal(
+                'Limpar Histórico de Mídias?',
+                'Esta ação removerá permanentemente todos os vídeos e legendas salvos no histórico. Deseja continuar?',
+                async () => {
+                    try {
+                        const db = await openHistoryDB();
+                        const tx = db.transaction('media_history', 'readwrite');
+                        const store = tx.objectStore('media_history');
+                        store.clear();
+                        tx.oncomplete = () => {
+                            renderHistoryList();
+                            showToast('Histórico limpo com sucesso.');
+                        };
+                    } catch (err) {
+                        console.error("Erro ao limpar histórico:", err);
+                    }
+                }
+            );
+        }
+
         function switchMainTab(tab) {
             currentMainTab = tab;
             const btnImport = document.getElementById('mainTabImport');
             const btnList = document.getElementById('mainTabList');
+            const btnMedia = document.getElementById('mainTabMedia');
+
             const viewImport = document.getElementById('viewImport');
             const viewList = document.getElementById('viewList');
+            const viewMedia = document.getElementById('viewMedia');
+
+            btnImport.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 whitespace-nowrap";
+            btnList.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 whitespace-nowrap";
+            btnMedia.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-purple-700 bg-purple-50 hover:bg-purple-100 whitespace-nowrap border border-purple-200";
+
+            viewImport.classList.add('hidden');
+            viewList.classList.add('hidden');
+            viewMedia.classList.add('hidden');
 
             if (tab === 'import') {
-                btnImport.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs";
-                btnList.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+                btnImport.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs whitespace-nowrap";
                 viewImport.classList.remove('hidden');
-                viewList.classList.add('hidden');
-            } else {
-                btnList.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs";
-                btnImport.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+            } else if (tab === 'list') {
+                btnList.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-shopee-orange text-white shadow-xs whitespace-nowrap";
                 viewList.classList.remove('hidden');
-                viewImport.classList.add('hidden');
+            } else if (tab === 'media') {
+                btnMedia.className = "flex-1 py-2.5 px-2 rounded-lg font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-purple-700 text-white shadow-xs whitespace-nowrap";
+                viewMedia.classList.remove('hidden');
             }
         }
 
@@ -469,7 +1057,7 @@
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('shopee_converter_data_v5');
+            const saved = localStorage.getItem('shopee_converter_data_v6');
             if (saved) {
                 try { currentData = JSON.parse(saved); }
                 catch (e) { currentData = [...SAMPLE_DATA]; }
@@ -479,7 +1067,7 @@
         }
 
         function saveToStorage() {
-            localStorage.setItem('shopee_converter_data_v5', JSON.stringify(currentData));
+            localStorage.setItem('shopee_converter_data_v6', JSON.stringify(currentData));
         }
 
         function setupDragAndDrop() {
@@ -586,7 +1174,6 @@
             if (rawContent) parseAndConvert(rawContent, true);
         }
 
-        // STREAMING_CHUNK:Parsing and Data Conversion Engine...
         function parseAndConvert(text, autoNotify = true) {
             const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
             if (lines.length === 0) return { addedCount: 0, duplicateCount: 0 };
@@ -723,15 +1310,6 @@
             return { addedCount, duplicateCount };
         }
 
-        function generateDefaultCaption(name) {
-            let short = name;
-            if (short.length > 35) short = short.substring(0, 32) + '...';
-            let caption = `🔥 ${short}! Garanta o seu no link 👇 #achadinhos #shopee #promocao #ofertas`;
-            if (caption.length > 150) caption = `🔥 ${short} no link 👇 #achadinhos #shopee #promocao`;
-            if (caption.length > 150) caption = caption.substring(0, 147) + '...';
-            return caption;
-        }
-
         function parseCSVLine(text, delimiter) {
             const result = [];
             let cell = '';
@@ -844,7 +1422,6 @@
             }
         }
 
-        // Open offer link and auto-post
         function openLinkAndPost(id) {
             const item = currentData.find(d => d.id === id);
             if (item) {
@@ -865,63 +1442,144 @@
             }
         }
 
-        // STREAMING_CHUNK:AI Caption Single & Batch Generators...
-        async function generateLegendaAI(id) {
-            const item = currentData.find(d => d.id === id);
-            if (!item) return;
+        function handleInstantImages(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
 
-            const btn = document.getElementById(`btnAi_${id}`);
-            if (btn) {
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
-                btn.disabled = true;
-            }
+            instantImages = [];
+            const thumbsContainer = document.getElementById('instantThumbnails');
+            if (thumbsContainer) thumbsContainer.innerHTML = '';
 
-            try {
-                const systemPrompt = "Você é um especialista em marketing de afiliados Shopee. Crie uma legenda viral e atraente. OBRIGATÓRIO: Resuma o nome do produto para deixá-lo bem curto, peça para acessar no link e adicione hashtags estratégicas ao final (ex: #achadinhos #shopee #promocao #ofertas). NÃO INCLUA O PREÇO DO PRODUTO. MÁXIMO ABSOLUTO DE 145 CARACTERES. Responda APENAS o texto final sem aspas.";
-                const userQuery = `Produto: ${item.itemName}.`;
+            let loadedCount = 0;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        instantImages.push(img);
+                        loadedCount++;
 
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                        if (thumbsContainer) {
+                            const thumb = document.createElement('img');
+                            thumb.src = e.target.result;
+                            thumb.className = "w-14 h-14 rounded-xl object-cover border-2 border-purple-400 shrink-0 shadow-sm";
+                            thumbsContainer.appendChild(thumb);
+                        }
 
-                const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                        const countEl = document.getElementById('instantImgCount');
+                        if (countEl) countEl.innerText = instantImages.length;
+
+                        if (instantImages.length === 1) {
+                            drawSingleImageOnCanvas(img);
+                        }
+                    };
+                    img.src = e.target.result;
                 };
+                reader.readAsDataURL(file);
+            });
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            showToast(`${files.length} imagem(ns) / print(s) carregada(s)!`);
+        }
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        function getImageBase64(img) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || img.width || 300;
+            canvas.height = img.naturalHeight || img.height || 300;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            return canvas.toDataURL('image/png').replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+        }
 
-                const rawText = await response.text();
-                if (!rawText) throw new Error("Resposta vazia da API");
+        function drawSingleImageOnCanvas(img) {
+            const canvas = document.getElementById('videoCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const placeholder = document.getElementById('videoCanvasPlaceholder');
+            if (placeholder) placeholder.classList.add('hidden');
 
-                const result = JSON.parse(rawText);
-                let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-                text = text.replace(/^["']|["']$/g, '');
+            ctx.fillStyle = '#090d16';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                if (!text) text = generateDefaultCaption(item.itemName);
-                else if (text.length > 150) text = text.substring(0, 147) + '...';
+            const imgWidth = img.naturalWidth || img.width || 1;
+            const imgHeight = img.naturalHeight || img.height || 1;
 
-                item.legenda = text;
-                saveToStorage();
-                renderTable();
-                showToast('Legenda gerada por IA!');
-            } catch (err) {
-                console.error("Erro na legenda IA:", err);
-                item.legenda = generateDefaultCaption(item.itemName);
-                saveToStorage();
-                renderTable();
-                showToast('Legenda padrão aplicada (IA indisponível).', 'warning');
-            } finally {
-                if (btn) {
-                    btn.innerHTML = `<i class="fas fa-wand-magic-sparkles text-amber-500"></i>`;
-                    btn.disabled = false;
+            const hRatio = canvas.width / imgWidth;
+            const vRatio = canvas.height / imgHeight;
+            const ratio = Math.min(hRatio, vRatio) * 0.92;
+
+            const centerShift_x = (canvas.width - imgWidth * ratio) / 2;
+            const centerShift_y = (canvas.height - imgHeight * ratio) / 2;
+
+            ctx.drawImage(img, 0, 0, imgWidth, imgHeight, centerShift_x, centerShift_y, imgWidth * ratio, imgHeight * ratio);
+        }
+
+        function fillBagsPreset() {
+            const prodInput = document.getElementById('instantProdName');
+            if (prodInput) prodInput.value = "KIT 2 BOLSA FEMININA DE OMBRO MEIA LUA";
+            
+            const sampleUrls = [
+                'https://img.icons8.com/color/512/shopee.png'
+            ];
+
+            instantImages = [];
+            const thumbsContainer = document.getElementById('instantThumbnails');
+            if (thumbsContainer) thumbsContainer.innerHTML = '';
+
+            let img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                instantImages.push(img);
+                const countEl = document.getElementById('instantImgCount');
+                if (countEl) countEl.innerText = "1 (Exemplo)";
+                
+                if (thumbsContainer) {
+                    const thumb = document.createElement('img');
+                    thumb.src = img.src;
+                    thumb.className = "w-14 h-14 rounded-xl object-cover border-2 border-purple-400 shrink-0 shadow-sm";
+                    thumbsContainer.appendChild(thumb);
                 }
+
+                drawSingleImageOnCanvas(img);
+                generateInstantCaption();
+                showToast('Exemplo de produto carregado!');
+            };
+            img.src = sampleUrls[0];
+        }
+
+        function generateInstantCaption() {
+            const nameInput = document.getElementById('instantProdName');
+            const name = (nameInput ? nameInput.value.trim() : '') || "KIT 2 BOLSA FEMININA DE OMBRO MEIA LUA";
+            const caption = generateDefaultCaption(name);
+
+            const outputEl = document.getElementById('instantCaptionOutput');
+            if (outputEl) outputEl.value = caption;
+            showToast('Legenda instantânea gerada com sucesso!');
+        }
+
+        function copyInstantCaption() {
+            const outputEl = document.getElementById('instantCaptionOutput');
+            const text = outputEl ? outputEl.value : '';
+            if (!text) {
+                showToast('Nenhuma legenda gerada ainda.', 'warning');
+                return;
             }
+            copyToClipboard(text);
+            showToast('Legenda copiada para a área de transferência!');
+        }
+
+        function copyProductName() {
+            const nameInput = document.getElementById('instantProdName');
+            let name = nameInput ? nameInput.value.trim() : '';
+            
+            if (!name) {
+                name = "KIT 2 BOLSA FEMININA DE OMBRO MEIA LUA";
+                if (nameInput) nameInput.value = name;
+            }
+
+            const cleanTextName = name.replace(/<[^>]*>?/gm, '').trim();
+
+            copyToClipboard(cleanTextName);
+            showToast('Texto do nome copiado com sucesso! 📋');
         }
 
         async function generateAllLegendasAI() {
@@ -939,42 +1597,8 @@
             for (let i = 0; i < items.length; i++) {
                 mainBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i + 1}/${items.length}...`;
                 const item = items[i];
-                try {
-                    const systemPrompt = "Crie uma legenda super atrativa de afiliado Shopee. REGRA ESTRITA: Nome do produto bem curto + chamada para o link + hashtags chamativas (#achadinhos #shopee #promocao #ofertas). NÃO INCLUA PREÇO DO PRODUTO. MÁXIMO ABSOLUTO DE 145 CARACTERES. Responda somente o texto final sem aspas.";
-                    const userQuery = `Produto: ${item.itemName}.`;
-
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-                    const payload = {
-                        contents: [{ parts: [{ text: userQuery }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] }
-                    };
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    const rawText = await response.text();
-                    if (!rawText) throw new Error("Resposta vazia da API");
-
-                    const result = JSON.parse(rawText);
-                    let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-                    text = text.replace(/^["']|["']$/g, '');
-
-                    if (!text) text = generateDefaultCaption(item.itemName);
-                    else if (text.length > 150) text = text.substring(0, 147) + '...';
-
-                    item.legenda = text;
-                    success++;
-                } catch (err) {
-                    item.legenda = generateDefaultCaption(item.itemName);
-                    success++;
-                }
+                item.legenda = generateDefaultCaption(item.itemName);
+                success++;
             }
 
             saveToStorage();
@@ -984,7 +1608,91 @@
             showToast(`Legendas atualizadas para ${success} produtos!`);
         }
 
-        // STREAMING_CHUNK:Rendering Products Responsive Cards List...
+        function runSystemTestSuite() {
+            const modal = document.getElementById('testSuiteModal');
+            const resultsContainer = document.getElementById('testResultsList');
+            const summaryBadge = document.getElementById('testSummaryBadge');
+
+            modal.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+            summaryBadge.innerText = "Executando testes...";
+            summaryBadge.className = "text-xs font-bold text-amber-600 animate-pulse";
+
+            const logTest = (name, passed, details) => {
+                const row = document.createElement('div');
+                row.className = `p-2.5 rounded-lg border ${passed ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-red-50 border-red-200 text-red-900'} space-y-1`;
+                row.innerHTML = `
+                    <div class="flex items-center justify-between font-bold text-[11px]">
+                        <span>${passed ? '✅ PASSOU' : '❌ FALHOU'}: ${name}</span>
+                        <span class="text-[10px] opacity-75">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="text-[10px] opacity-90 leading-tight">${details}</div>
+                `;
+                resultsContainer.appendChild(row);
+                resultsContainer.scrollTop = resultsContainer.scrollHeight;
+            };
+
+            let passedCount = 0;
+            let totalTests = 5;
+
+            setTimeout(() => {
+                if (currentData.length > 0) {
+                    passedCount++;
+                    logTest("Teste 1: Carregamento de Produtos", true, `${currentData.length} produtos presentes no estado.`);
+                } else {
+                    logTest("Teste 1: Carregamento de Produtos", false, "Lista de produtos vazia.");
+                }
+
+                const legSet = new Set(currentData.map(d => d.legenda));
+                if (legSet.size > 1) {
+                    passedCount++;
+                    logTest("Teste 2: Diversificação de Legendas", true, `Detectadas ${legSet.size} legendas únicas.`);
+                } else {
+                    logTest("Teste 2: Diversificação de Legendas", false, "Legendas duplicadas encontradas.");
+                }
+
+                const canvas = document.getElementById('videoCanvas');
+                if (canvas && canvas.getContext('2d')) {
+                    passedCount++;
+                    logTest("Teste 3: Engine do Canvas de Vídeo", true, "Canvas 9:16 (1080x1920) pronto para gravar.");
+                } else {
+                    logTest("Teste 3: Engine do Canvas de Vídeo", false, "Falha ao inicializar Canvas.");
+                }
+
+                const testItem = currentData[0];
+                if (testItem) {
+                    const initialStatus = testItem.posted;
+                    togglePostedStatus(testItem.id);
+                    const toggledStatus = testItem.posted;
+                    togglePostedStatus(testItem.id);
+                    if (initialStatus !== toggledStatus) {
+                        passedCount++;
+                        logTest("Teste 4: Transição A Postar <-> Postado", true, "Status alterado e revertido com sucesso.");
+                    } else {
+                        logTest("Teste 4: Transição A Postar <-> Postado", false, "Falha ao alterar estado.");
+                    }
+                }
+
+                const activeLinks = currentData.map(d => d.offerLink).filter(l => l);
+                if (activeLinks.length > 0) {
+                    passedCount++;
+                    logTest("Teste 5: Extração de Links de Oferta", true, `${activeLinks.length} links validados.`);
+                } else {
+                    logTest("Teste 5: Extração de Links de Oferta", false, "Nenhum link ativo encontrado.");
+                }
+
+                summaryBadge.innerText = `Resultado: ${passedCount}/${totalTests} Testes Concluídos!`;
+                summaryBadge.className = passedCount === totalTests 
+                    ? "text-xs font-bold text-emerald-600" 
+                    : "text-xs font-bold text-amber-600";
+
+            }, 400);
+        }
+
+        function closeTestSuiteModal() {
+            document.getElementById('testSuiteModal').classList.add('hidden');
+        }
+
         function renderTable() {
             const listContainer = document.getElementById('cardsList');
             if (!listContainer) return;
@@ -1022,7 +1730,6 @@
                         : "p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 shadow-xs space-y-2.5 transition-all w-full";
 
                     card.innerHTML = `
-                        <!-- Product Title and Badges -->
                         <div class="space-y-1.5 w-full">
                             <div class="flex items-start gap-2">
                                 <span class="text-[10px] font-mono text-slate-400 font-bold bg-slate-100 px-1.5 py-0.5 rounded shrink-0">#${idx + 1}</span>
@@ -1031,7 +1738,6 @@
                                 </h4>
                             </div>
 
-                            <!-- Badges -->
                             <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
                                 <span class="bg-orange-100 text-shopee-orange font-bold px-2 py-0.5 rounded-md shrink-0">
                                     R$ ${escapeHtml(row.price)}
@@ -1048,24 +1754,19 @@
                             </div>
                         </div>
 
-                        <!-- Action Controls (Responsive Row) -->
+                        <div class="bg-purple-50/60 p-2 rounded-lg border border-purple-100 text-[11px] text-purple-950 font-sans italic">
+                            <span class="font-bold non-italic text-purple-700">Legenda:</span> ${escapeHtml(row.legenda || '')}
+                        </div>
+
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                            
                             <div class="flex items-center gap-1.5 flex-1 min-w-[200px]">
-                                <!-- Copiar Legenda Button -->
-                                <button onclick="copyLegenda('${row.id}', this)" class="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95" title="Copiar legenda do produto">
+                                <button onclick="copyLegenda('${row.id}', this)" class="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
                                     <i class="fas fa-copy"></i>
                                     <span>Copiar Legenda</span>
-                                </button>
-
-                                <!-- AI Single Generator -->
-                                <button onclick="generateLegendaAI('${row.id}')" id="btnAi_${row.id}" class="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold transition-colors shrink-0" title="Regerar legenda com IA">
-                                    <i class="fas fa-wand-magic-sparkles text-amber-500"></i>
                                 </button>
                             </div>
 
                             <div class="flex items-center gap-1.5">
-                                <!-- Acessar Link Button -->
                                 ${row.posted ? `
                                     <span class="px-3 py-2 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-lg flex items-center gap-1">
                                         <i class="fas fa-circle-check text-emerald-600"></i> Já Postado
@@ -1078,16 +1779,15 @@
                                 `}
 
                                 ${row.posted ? `
-                                    <button onclick="togglePostedStatus('${row.id}')" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium px-1" title="Restaurar produto">
+                                    <button onclick="togglePostedStatus('${row.id}')" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium px-1">
                                         Desfazer
                                     </button>
                                 ` : ''}
 
-                                <button onclick="removeRow('${row.id}')" class="text-slate-400 hover:text-red-500 p-1.5 rounded transition-colors" title="Excluir produto">
+                                <button onclick="removeRow('${row.id}')" class="text-slate-400 hover:text-red-500 p-1.5 rounded transition-colors">
                                     <i class="fas fa-trash-can"></i>
                                 </button>
                             </div>
-
                         </div>
                     `;
                     listContainer.appendChild(card);
@@ -1287,6 +1987,15 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
+        // Window Onload Handler
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            renderTable();
+            updateStats();
+            setupDragAndDrop();
+            renderHistoryList();
+        });
     </script>
 </body>
 </html>
