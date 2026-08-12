@@ -24,6 +24,19 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Firebase Imports for Cloud Synchronization -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.FirebaseModule = {
+            initializeApp,
+            getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
+            getFirestore, doc, setDoc, getDoc, collection, onSnapshot
+        };
+    </script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -80,6 +93,49 @@
         <span id="toastMessage" class="text-xs sm:text-sm font-medium leading-snug break-words">Operação realizada com sucesso!</span>
     </div>
 
+    <!-- Modal de Sincronização em Nuvem (PC <-> Celular) -->
+    <div id="syncModal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 border border-slate-100 mx-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg font-bold">
+                        <i class="fas fa-cloud-arrow-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Sincronizar Celular & PC</h3>
+                        <p class="text-[11px] text-slate-500">Conecte seus aparelhos em tempo real</p>
+                    </div>
+                </div>
+                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="bg-indigo-50 border border-indigo-100 p-3.5 rounded-xl text-center space-y-1">
+                    <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Seu Código de Conexão</span>
+                    <div id="currentSyncCodeDisplay" class="text-2xl font-black font-mono text-indigo-900 tracking-widest py-1">----</div>
+                    <p class="text-[11px] text-indigo-700">Digite este código no outro aparelho para conectar</p>
+                </div>
+
+                <div class="space-y-1.5 pt-1">
+                    <label class="block text-xs font-bold text-slate-700">Digitar Código de Outro Aparelho:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="inputSyncCode" placeholder="Ex: GABI-8921" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono uppercase font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="connectToSyncCode()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition-all">
+                            Conectar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-[10px] text-slate-400 bg-slate-50 p-2.5 rounded-xl flex items-center gap-1.5">
+                    <i class="fas fa-circle-info text-indigo-500"></i>
+                    <span>Tudo o que você gerar no PC aparecerá automaticamente no celular!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-100 mx-auto">
@@ -120,8 +176,13 @@
                     </div>
                 </div>
 
-                <!-- Global Action Controls & Test Trigger -->
+                <!-- Global Action Controls & Cloud Sync Trigger -->
                 <div class="flex items-center justify-between sm:justify-end gap-1.5 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+                    <button onclick="openSyncModal()" class="px-2.5 py-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1.5">
+                        <i class="fas fa-cloud text-xs text-indigo-200"></i>
+                        <span id="syncStatusBadgeText">Sincronizar Celular</span>
+                    </button>
+
                     <button onclick="runSystemTestSuite()" class="px-2.5 py-1.5 text-[11px] font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg shadow-xs transition-all shrink-0 flex items-center gap-1.5 animate-pulse-subtle">
                         <i class="fas fa-vial-circle-check text-xs"></i>
                         <span>Rodar Testes</span>
@@ -351,7 +412,7 @@
 
         </div>
 
-        <!-- TAB 3: GERAR MÍDIA & VÍDEO (GERADOR INSTANTÂNEO DE PRINTS / FOTOS / VÍDEOS) -->
+        <!-- TAB 3: GERAR MÍDIA & VÍDEO -->
         <div id="viewMedia" class="hidden space-y-4 sm:space-y-6">
             <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs">
                 <div class="max-w-5xl mx-auto space-y-6">
@@ -432,7 +493,7 @@
                                     2. Informações do Produto & Legenda
                                 </label>
                                 
-                                <!-- Nome do Produto em Texto Puro com Botão de Copiar Apenas o Texto -->
+                                <!-- Nome do Produto em Texto Puro -->
                                 <div>
                                     <div class="flex items-center justify-between mb-1">
                                         <label class="block text-[11px] font-semibold text-slate-600">Nome do Produto (Texto Puro)</label>
@@ -486,7 +547,7 @@
                                 <span id="videoStatusBadge" class="text-[10px] bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded border border-slate-700">Aguardando Mídias</span>
                             </div>
 
-                            <!-- Container do Player do Canvas / Vídeo Gerado Limpo -->
+                            <!-- Container do Player do Canvas -->
                             <div class="relative aspect-[9/16] max-h-[380px] bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner mx-auto w-full">
                                 <canvas id="videoCanvas" width="1080" height="1920" class="w-full h-full object-contain"></canvas>
 
@@ -584,8 +645,91 @@
         let deferredPrompt = null;
         let instantImages = [];
         let currentVideoBlob = null;
+        let currentSyncCode = localStorage.getItem('shopee_sync_code') || ('GABI-' + Math.floor(1000 + Math.random() * 9000));
 
-        // UI Progress Bar Helper
+        // Firebase Cloud Sync setup
+        let db = null;
+        let auth = null;
+
+        async function initCloudSync() {
+            try {
+                if (!window.FirebaseModule) return;
+                const { initializeApp, getAuth, signInAnonymously, getFirestore, collection, doc, onSnapshot, setDoc } = window.FirebaseModule;
+
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'shopee-afiliados-app';
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+                if (!firebaseConfig) return;
+
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                await signInAnonymously(auth);
+
+                document.getElementById('currentSyncCodeDisplay').innerText = currentSyncCode;
+                localStorage.setItem('shopee_sync_code', currentSyncCode);
+
+                // Listen to live Cloud updates for synced data
+                const syncDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'sync_rooms', currentSyncCode);
+                onSnapshot(syncDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const cloudData = docSnap.data();
+                        if (cloudData && Array.isArray(cloudData.items)) {
+                            currentData = cloudData.items;
+                            renderTable();
+                            updateStats();
+                        }
+                    }
+                }, (err) => console.debug("Cloud sync snapshot error", err));
+
+                const syncBtnText = document.getElementById('syncStatusBadgeText');
+                if (syncBtnText) syncBtnText.innerText = `Nuvem: ${currentSyncCode}`;
+
+            } catch (err) {
+                console.debug("Firebase init bypassed:", err);
+            }
+        }
+
+        async function pushToCloudSync() {
+            try {
+                if (!db || !auth || !auth.currentUser) return;
+                const { doc, setDoc } = window.FirebaseModule;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'shopee-afiliados-app';
+                const syncDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'sync_rooms', currentSyncCode);
+
+                await setDoc(syncDocRef, {
+                    items: currentData,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+            } catch (err) {
+                console.debug("Cloud push error", err);
+            }
+        }
+
+        function openSyncModal() {
+            document.getElementById('currentSyncCodeDisplay').innerText = currentSyncCode;
+            document.getElementById('syncModal').classList.remove('hidden');
+        }
+
+        function closeSyncModal() {
+            document.getElementById('syncModal').classList.add('hidden');
+        }
+
+        function connectToSyncCode() {
+            const input = document.getElementById('inputSyncCode').value.trim().toUpperCase();
+            if (!input) {
+                showToast('Digite um código válido.', 'warning');
+                return;
+            }
+            currentSyncCode = input;
+            localStorage.setItem('shopee_sync_code', currentSyncCode);
+            showToast(`Conectado à sala ${currentSyncCode}! Sincronizando...`);
+            closeSyncModal();
+            initCloudSync();
+        }
+
         function updateProgressBar(percent, message) {
             const container = document.getElementById('processingProgressBarContainer');
             const label = document.getElementById('progressBarLabel');
@@ -608,7 +752,6 @@
             if (fill) fill.style.width = `${cleanPercent}%`;
         }
 
-        // Context-Aware Dynamic Hashtag Generator
         function getContextHashtags(name) {
             const n = name.toLowerCase();
             if (n.includes('bolsa') || n.includes('mochila') || n.includes('carteira') || n.includes('mala')) {
@@ -631,7 +774,6 @@
             return '#achadinhos #shopee #promocao #ofertas';
         }
 
-        // Caption Fallback Generator
         function generateDefaultCaption(name) {
             let shortName = name;
             if (shortName.length > 45) shortName = shortName.substring(0, 42) + '...';
@@ -738,8 +880,8 @@
                     }
                 }));
 
-                const systemPrompt = "Você é um assistente especialista da Shopee. Sua tarefa é ANALISAR E SEPARAR as imagens por PRODUTO DISTINTO. Se o usuário enviou fotos de produtos diferentes (exemplo: fotos 0 e 1 de um Tênis, foto 2 de um Relógio, fotos 3 e 4 de uma Bolsa), você DEVE criar um grupo separado para CADA produto com os seus respectivos imageIndices.\n\nEXEMPLO DE SEPARAÇÃO:\n- Produto 1 (Tênis): imageIndices [0, 1]\n- Produto 2 (Relógio): imageIndices [2]\n- Produto 3 (Bolsa): imageIndices [3, 4]\n\nREGRA CRÍTICA: Cada produto DEVE conter APENAS AS FOTOS QUE PERTENCEM A ELE! Não misture fotos de produtos diferentes no mesmo vídeo. Para cada produto individual, forneça o productName exato e uma caption com no máximo 150 caracteres incluindo 3 a 4 hashtags específicas do nicho do produto.\nResponda EXCLUSIVAMENTE em formato JSON com a estrutura: { \"products\": [ { \"imageIndices\": [0, 1], \"productName\": \"...\", \"caption\": \"...\" } ] }";
-                const userQuery = "Analise e separe RIGOROSAMENTE todos os produtos diferentes presentes nestas imagens. Crie um grupo separado para cada produto distinto, associando apenas as fotos pertencentes a cada um.";
+                const systemPrompt = "Você é um assistente especialista da Shopee. Sua tarefa é ANALISAR E SEPARAR as imagens por PRODUTO DISTINTO. Se o usuário enviou fotos de produtos diferentes, crie um grupo separado para cada produto com seus imageIndices.\nPara cada produto individual, forneça o productName exato e uma caption com no máximo 150 caracteres incluindo 3 a 4 hashtags específicas do nicho do produto.\nResponda EXCLUSIVAMENTE em formato JSON: { \"products\": [ { \"imageIndices\": [0, 1], \"productName\": \"...\", \"caption\": \"...\" } ] }";
+                const userQuery = "Analise e separe RIGOROSAMENTE todos os produtos diferentes presentes nestas imagens.";
 
                 const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
@@ -782,7 +924,6 @@
                 console.error("Erro ao analisar múltiplos produtos:", err);
             }
 
-            // Fallback caso a API não responda ou em teste local sem chave: se houver múltiplas imagens, separa cada uma em seu próprio vídeo individual
             if (instantImages.length > 1) {
                 const fallbackName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
                 return instantImages.map((img, i) => ({
@@ -802,7 +943,6 @@
 
         function renderInstantVideoForImages(groupImages, onFrameProgress) {
             return new Promise((resolve) => {
-                // Utiliza APENAS as fotos pertencentes a este produto específico
                 const videoImages = (groupImages && groupImages.length > 0) ? groupImages : instantImages;
 
                 const canvas = document.getElementById('videoCanvas');
@@ -1068,6 +1208,7 @@
 
         function saveToStorage() {
             localStorage.setItem('shopee_converter_data_v6', JSON.stringify(currentData));
+            pushToCloudSync();
         }
 
         function setupDragAndDrop() {
@@ -1995,6 +2136,7 @@
             updateStats();
             setupDragAndDrop();
             renderHistoryList();
+            setTimeout(initCloudSync, 800);
         });
     </script>
 </body>
