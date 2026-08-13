@@ -880,8 +880,8 @@
                     }
                 }));
 
-                const systemPrompt = "Você é um assistente especialista da Shopee. Sua tarefa é ANALISAR E SEPARAR as imagens por PRODUTO DISTINTO. Se o usuário enviou fotos de produtos diferentes, crie um grupo separado para cada produto com seus imageIndices.\nPara cada produto individual, forneça o productName exato e uma caption com no máximo 150 caracteres incluindo 3 a 4 hashtags específicas do nicho do produto.\nResponda EXCLUSIVAMENTE em formato JSON: { \"products\": [ { \"imageIndices\": [0, 1], \"productName\": \"...\", \"caption\": \"...\" } ] }";
-                const userQuery = "Analise e separe RIGOROSAMENTE todos os produtos diferentes presentes nestas imagens.";
+                const systemPrompt = "Você é um assistente especialista da Shopee. Sua tarefa é ANALISAR E AGRUPAR as imagens por PRODUTO DISTINTO. Se houver 3 ou 4 fotos do MESMO produto, junta TODAS as fotos desse mesmo produto em um ÚNICO grupo no campo 'imageIndices'. REGRA OBRIGATÓRIA: Se uma das imagens for um PRINT/SCREENSHOT com o nome ou preço do produto, use essa imagem APENAS para identificar o 'productName' e 'caption'. NUNCA inclua o índice dessa imagem de print no campo 'imageIndices'. O 'imageIndices' deve conter EXCLUSIVAMENTE as fotos limpas do produto para o vídeo.\nPara cada produto individual, forneça o productName exato e uma caption de no máximo 150 caracteres incluindo 3 a 4 hashtags específicas do nicho do produto.\nResponda EXCLUSIVAMENTE em formato JSON: { \"products\": [ { \"imageIndices\": [0, 1, 2], \"productName\": \"...\", \"caption\": \"...\" } ] }";
+                const userQuery = "Analise e agrupe rigorosamente TODAS as fotos que pertencem ao mesmo produto no mesmo grupo.";
 
                 const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
@@ -924,16 +924,9 @@
                 console.error("Erro ao analisar múltiplos produtos:", err);
             }
 
-            if (instantImages.length > 1) {
-                const fallbackName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
-                return instantImages.map((img, i) => ({
-                    productName: instantImages.length === 1 ? fallbackName : `${fallbackName} (Item ${i + 1})`,
-                    caption: generateDefaultCaption(fallbackName),
-                    images: [img]
-                }));
-            }
-
             const fallbackName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
+            
+            // Default fallback: Group all images into 1 product video instead of 1 product per photo
             return [{
                 productName: fallbackName.includes("Analisando") ? "Produto Shopee" : fallbackName,
                 caption: generateDefaultCaption(fallbackName),
@@ -943,7 +936,16 @@
 
         function renderInstantVideoForImages(groupImages, onFrameProgress) {
             return new Promise((resolve) => {
-                const videoImages = (groupImages && groupImages.length > 0) ? groupImages : instantImages;
+                let rawImages = (groupImages && groupImages.length > 0) ? groupImages : instantImages;
+                
+                // Filtra automaticamente capturas de tela/prints (ex: banners horizontais e prints com proporção > 1.35)
+                let videoImages = rawImages.filter(img => {
+                    const w = img.naturalWidth || img.width || 1;
+                    const h = img.naturalHeight || img.height || 1;
+                    return (w / h) < 1.35;
+                });
+
+                if (videoImages.length === 0) videoImages = rawImages;
 
                 const canvas = document.getElementById('videoCanvas');
                 const ctx = canvas.getContext('2d');
