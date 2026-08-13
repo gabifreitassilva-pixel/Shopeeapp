@@ -1,62 +1,56 @@
-const CACHE_NAME = 'shopee-gabriela-v2';
+const CACHE_NAME = 'shopee-affiliates-v2';
+
+// Recursos básicos que queremos salvar no cache do celular/navegador do usuário
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap',
-  'https://img.icons8.com/color/512/shopee.png'
+  'https://img.icons8.com/color/512/shopee.png',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
 ];
 
-// Instalação do Service Worker e armazenamento em cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+      console.log('Cache aberto com sucesso no SW');
+      // Usamos catch para não falhar a instalação caso algum link externo caia
+      return cache.addAll(ASSETS_TO_CACHE).catch(err => console.warn('Aviso: Algum recurso não pôde ser cacheado na instalação', err));
+    })
   );
+  self.skipWaiting();
 });
 
-// Ativação e limpeza de caches antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Removendo cache antigo:', cacheName);
+            return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
-// Interceção de requisições (estratégia Cache First com suporte a Network Fallback)
 self.addEventListener('fetch', (event) => {
-  // Ignora requisições de APIs externas para não travar conexões dinâmicas (ex: Gemini/Firebase)
-  if (event.request.url.includes('generativelanguage.googleapis.com') || 
-      event.request.url.includes('firebase') || 
-      event.request.url.includes('firestore')) {
-    return;
+  // Ignora requisições de outras origens ou de APIs que não queremos cachear agressivamente (como o Firebase)
+  if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('generativelanguage.googleapis.com')) {
+      return;
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
-        }
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return networkResponse;
+      // Se encontrou no cache, retorna. Senão, faz a requisição na rede.
+      return cachedResponse || fetch(event.request).then(response => {
+        // Opcional: Você pode clonar e adicionar novas requisições ao cache aqui se quiser um offline mais robusto
+        return response;
+      }).catch(() => {
+          // Fallback genérico caso a rede caia e não tenha no cache
+          console.warn('Você está offline e o recurso não está no cache:', event.request.url);
       });
     })
   );
