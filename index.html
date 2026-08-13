@@ -12,8 +12,8 @@
     <meta name="apple-mobile-web-app-title" content="Shopee Afiliados">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/shopee.png">
     
-    <!-- Manifest Link -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Dynamic Manifest Link -->
+    <link rel="manifest" id="manifestLink">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2139,38 +2139,6 @@
             renderHistoryList();
             setTimeout(initCloudSync, 800);
         });
-
-        // REGISTRO DO SERVICE WORKER E PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registrado com sucesso:', reg.scope))
-                    .catch(err => console.error('Falha ao registrar Service Worker:', err));
-            });
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const btnInstall = document.getElementById('btnInstallPwa');
-            if (btnInstall) {
-                btnInstall.classList.remove('hidden');
-            }
-        });
-
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Usuário instalou o PWA');
-                    }
-                    deferredPrompt = null;
-                    const btnInstall = document.getElementById('btnInstallPwa');
-                    if (btnInstall) btnInstall.classList.add('hidden');
-                });
-            }
-        }
     </script>
 </body>
 </html>
