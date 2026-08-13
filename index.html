@@ -12,8 +12,8 @@
     <meta name="apple-mobile-web-app-title" content="Shopee Afiliados">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/shopee.png">
     
-    <!-- Dynamic Manifest Link -->
-    <link rel="manifest" id="manifestLink">
+    <!-- Dynamic Manifest Link Substituído pelo Real -->
+    <link rel="manifest" href="manifest.json">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -646,6 +646,45 @@
         let instantImages = [];
         let currentVideoBlob = null;
         let currentSyncCode = localStorage.getItem('shopee_sync_code') || ('GABI-' + Math.floor(1000 + Math.random() * 9000));
+
+        // Registro do Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Checagem para evitar o erro de "unsupported protocol" no ambiente de preview (blob:)
+                if (!window.location.href.startsWith('blob:')) {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('Service Worker registrado:', reg.scope))
+                        .catch(err => console.warn('Service Worker não registrado (Normal em ambiente local):', err));
+                } else {
+                    console.log('Ambiente de preview detectado. Service Worker ignorado temporariamente.');
+                }
+            });
+        }
+
+        // Lógica para interceptar o prompt de instalação do app
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btnInstall = document.getElementById('btnInstallPwa');
+            if (btnInstall) btnInstall.classList.remove('hidden');
+        });
+
+        // Lógica de clique do botão de instalação
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Escolha do usuário: ${outcome}`);
+                deferredPrompt = null;
+                const btnInstall = document.getElementById('btnInstallPwa');
+                if (btnInstall) btnInstall.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            showToast('Aplicativo instalado com sucesso! 🎉');
+        });
 
         // Firebase Cloud Sync setup
         let db = null;
