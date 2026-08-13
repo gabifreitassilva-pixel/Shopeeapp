@@ -775,20 +775,22 @@
         }
 
         function generateDefaultCaption(name) {
-            let shortName = name;
-            if (shortName.length > 45) shortName = shortName.substring(0, 42) + '...';
+            let shortName = name || 'Produto incrível';
+            if (shortName.length > 48) shortName = shortName.substring(0, 45) + '...';
 
             const hooks = [
-                `🔥 Olha esse achadinho: ${shortName}!`,
-                `😍 Lindo demais: ${shortName}!`,
-                `✨ Confira esse item: ${shortName}!`,
-                `⚡ Oferta especial: ${shortName}!`
+                `🔥 Olha esse achadinho imperdível: ${shortName}!`,
+                `😍 Lindo demais e super prático: ${shortName}!`,
+                `✨ Confira esse item indispensável: ${shortName}!`,
+                `⚡ Oferta especial da Shopee: ${shortName}!`,
+                `💖 Impossível não amar: ${shortName}!`
             ];
 
             const ctas = [
-                `Garanta no link 👇`,
-                `Acesse no link abaixo 👇`,
-                `Aproveite no link 👇`
+                `Garanta o seu no link 👇`,
+                `Acesse a promoção no link abaixo 👇`,
+                `Aproveite enquanto dura o estoque 👇`,
+                `Clique para conferir os detalhes 👇`
             ];
 
             const categoryHashtags = getContextHashtags(name);
@@ -799,6 +801,34 @@
             let caption = `${randomHook} ${randomCta} ${categoryHashtags}`;
             if (caption.length > 150) caption = caption.substring(0, 147) + '...';
             return caption;
+        }
+
+        async function generateAllLegendasAI() {
+            const items = currentData.filter(d => currentSubTab === 'all' ? true : (currentSubTab === 'posted' ? d.posted : !d.posted));
+            if (items.length === 0) {
+                showToast('Nenhum produto visível na lista para atualizar.', 'warning');
+                return;
+            }
+
+            const mainBtn = document.getElementById('btnAiBatch');
+            const originalHtml = mainBtn ? mainBtn.innerHTML : '';
+            if (mainBtn) mainBtn.disabled = true;
+
+            let success = 0;
+            for (let i = 0; i < items.length; i++) {
+                if (mainBtn) mainBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i + 1}/${items.length}...`;
+                const item = items[i];
+                item.legenda = generateDefaultCaption(item.itemName);
+                success++;
+            }
+
+            saveToStorage();
+            renderTable();
+            if (mainBtn) {
+                mainBtn.disabled = false;
+                mainBtn.innerHTML = originalHtml;
+            }
+            showToast(`✨ Legendas e hashtags atualizadas para ${success} produtos com sucesso!`);
         }
 
         async function generateVideoAndCaption() {
@@ -2131,7 +2161,6 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Window Onload Handler
         window.addEventListener('DOMContentLoaded', () => {
             loadFromStorage();
             renderTable();
