@@ -1585,6 +1585,57 @@
             }
         }
 
+        async function generateLegendaAI(id) {
+            const item = currentData.find(d => d.id === id);
+            if (!item) return;
+
+            const btn = document.getElementById(`btnAi_${id}`);
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+                btn.disabled = true;
+            }
+
+            try {
+                const systemPrompt = "Você é um especialista em marketing de afiliados Shopee. Crie uma legenda viral e atraente. OBRIGATÓRIO: Fale brevemente sobre a utilidade real do produto, resuma o nome do produto para deixá-lo bem curto, peça para acessar no link e adicione hashtags estratégicas ao final (ex: #achadinhos #shopee #promocao #ofertas). NÃO INCLUA O PREÇO DO PRODUTO. MÁXIMO ABSOLUTO DE 150 CARACTERES. Responda APENAS o texto final sem aspas.";
+                const userQuery = `Produto: ${item.itemName}.`;
+
+                const apiKey = ""; // INCLUA SUA CHAVE DA API AQUI
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const rawText = await response.text();
+                const result = JSON.parse(rawText);
+                let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+                text = text.replace(/^["']|["']$/g, '');
+
+                if (!text) text = generateDefaultCaption(item.itemName);
+                else if (text.length > 150) text = text.substring(0, 147) + '...';
+
+                item.legenda = text;
+                saveToStorage();
+                renderTable();
+                showToast('Legenda gerada por IA com sucesso!');
+            } catch (err) {
+                console.error("Erro na legenda IA:", err);
+                item.legenda = generateDefaultCaption(item.itemName);
+                saveToStorage();
+                renderTable();
+                showToast('API sem chave ou falhou. Usando legenda padrão.', 'warning');
+            }
+        }
+
         function handleInstantImages(event) {
             const files = Array.from(event.target.files);
             if (files.length === 0) return;
@@ -1737,10 +1788,42 @@
             mainBtn.disabled = true;
 
             let success = 0;
+            const systemPrompt = "Crie uma legenda super atrativa de afiliado Shopee. REGRA ESTRITA: Fale brevemente sobre a utilidade real do produto + nome bem curto + chamada para o link + hashtags chamativas. NÃO INCLUA PREÇO. MÁXIMO DE 150 CARACTERES. Responda somente o texto final sem aspas.";
+            
+            const apiKey = ""; // INCLUA SUA CHAVE DA API AQUI
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
             for (let i = 0; i < items.length; i++) {
                 mainBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i + 1}/${items.length}...`;
                 const item = items[i];
-                item.legenda = generateDefaultCaption(item.itemName);
+                
+                try {
+                    const payload = {
+                        contents: [{ parts: [{ text: `Produto: ${item.itemName}` }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    };
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    const rawText = await response.text();
+                    const result = JSON.parse(rawText);
+                    let text = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+                    text = text.replace(/^["']|["']$/g, '');
+
+                    if (!text) text = generateDefaultCaption(item.itemName);
+                    else if (text.length > 150) text = text.substring(0, 147) + '...';
+
+                    item.legenda = text;
+                } catch (err) {
+                    console.error("Falha ao gerar legenda:", err);
+                    item.legenda = generateDefaultCaption(item.itemName);
+                }
                 success++;
             }
 
@@ -1906,6 +1989,11 @@
                                 <button onclick="copyLegenda('${row.id}', this)" class="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
                                     <i class="fas fa-copy"></i>
                                     <span>Copiar Legenda</span>
+                                </button>
+                                
+                                <!-- AI Single Generator -->
+                                <button onclick="generateLegendaAI('${row.id}')" id="btnAi_${row.id}" class="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold transition-colors shrink-0" title="Regerar legenda com IA">
+                                    <i class="fas fa-wand-magic-sparkles text-amber-500"></i>
                                 </button>
                             </div>
 
