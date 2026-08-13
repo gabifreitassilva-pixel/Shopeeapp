@@ -1,15 +1,25 @@
-const CACHE_NAME = 'shopee-converter-v2';
-
-self.addEventListener('install', (e) => {
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', (e) => {
-    self.clients.claim();
-});
-
-self.addEventListener('fetch', (e) => {
-    e.respondWith(
-        fetch(e.request).catch(() => caches.match(e.request))
-    );
-});
+{
+"name": "Conversor Shopee Afiliados - Gabriela IA",
+"short_name": "Shopee Afiliados",
+"description": "Gerenciador, Gerador de Vídeos e Legendas Inteligentes para Afiliados Shopee",
+"start_url": "./index.html",
+"scope": "./",
+"display": "standalone",
+"orientation": "portrait",
+"background_color": "#f8fafc",
+"theme_color": "#ee4d2d",
+"icons": [
+{
+"src": "https://img.icons8.com/color/512/shopee.png",
+"sizes": "192x192",
+"type": "image/png",
+"purpose": "any maskable"
+},
+{
+"src": "https://img.icons8.com/color/512/shopee.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
+}
