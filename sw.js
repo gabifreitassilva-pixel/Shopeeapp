@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shopee-gabriela-v1';
+const CACHE_NAME = 'shopee-gabriela-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
