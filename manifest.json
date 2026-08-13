@@ -1,22 +1,22 @@
 {
-  "short_name": "Shopee Afiliados",
-  "name": "Conversor Shopee Afiliados - Gabriela IA",
-  "description": "Postagens, Vídeos & Legendas Automatizadas para Afiliados Shopee",
-  "icons": [
-    {
-      "src": "https://img.icons8.com/color/192/shopee.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "https://img.icons8.com/color/512/shopee.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
-  "start_url": "./index.html",
-  "background_color": "#f8fafc",
-  "theme_color": "#ee4d2d",
-  "display": "standalone",
-  "orientation": "portrait"
+"name": "Conversor Shopee Afiliados - Gabriela IA",
+"short_name": "Shopee Aff",
+"description": "Gerador de postagens, vídeos e legendas automatizadas para afiliados Shopee.",
+"start_url": "./index.html",
+"display": "standalone",
+"background_color": "#f8fafc",
+"theme_color": "#ee4d2d",
+"icons": [
+{
+"src": "https://img.icons8.com/color/192/shopee.png",
+"sizes": "192x192",
+"type": "image/png"
+},
+{
+"src": "https://img.icons8.com/color/512/shopee.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
 }
