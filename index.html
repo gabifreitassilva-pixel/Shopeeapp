@@ -12,8 +12,8 @@
     <meta name="apple-mobile-web-app-title" content="Shopee Afiliados">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/shopee.png">
     
-    <!-- Dynamic Manifest Link Substituído pelo Real -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Dynamic Manifest Link -->
+    <link rel="manifest" id="manifestLink">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -517,9 +517,9 @@
 
                                 <!-- Botão de Download de Vídeo -->
                                 <div>
-                                    <a id="btnDownloadVideo" download="shopee_video_gabriela.webm" class="hidden w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-center">
+                                    <a id="btnDownloadVideo" download="shopee_video_gabriela.mp4" class="hidden w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-center">
                                         <i class="fas fa-download text-sm"></i>
-                                        <span>Baixar Vídeo do Produto (.MP4 / WEBM)</span>
+                                        <span>Baixar Vídeo do Produto (.MP4)</span>
                                     </a>
                                     <div id="btnDownloadVideoPlaceholder" class="w-full py-2.5 px-3 bg-slate-200/70 text-slate-500 font-medium text-[11px] rounded-xl text-center border border-slate-200 flex items-center justify-center gap-1.5">
                                         <i class="fas fa-circle-info text-slate-400"></i>
@@ -646,45 +646,6 @@
         let instantImages = [];
         let currentVideoBlob = null;
         let currentSyncCode = localStorage.getItem('shopee_sync_code') || ('GABI-' + Math.floor(1000 + Math.random() * 9000));
-
-        // Registro do Service Worker (PWA)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                // Checagem para evitar o erro de "unsupported protocol" no ambiente de preview (blob:)
-                if (!window.location.href.startsWith('blob:')) {
-                    navigator.serviceWorker.register('./sw.js')
-                        .then(reg => console.log('Service Worker registrado:', reg.scope))
-                        .catch(err => console.warn('Service Worker não registrado (Normal em ambiente local):', err));
-                } else {
-                    console.log('Ambiente de preview detectado. Service Worker ignorado temporariamente.');
-                }
-            });
-        }
-
-        // Lógica para interceptar o prompt de instalação do app
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const btnInstall = document.getElementById('btnInstallPwa');
-            if (btnInstall) btnInstall.classList.remove('hidden');
-        });
-
-        // Lógica de clique do botão de instalação
-        async function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`Escolha do usuário: ${outcome}`);
-                deferredPrompt = null;
-                const btnInstall = document.getElementById('btnInstallPwa');
-                if (btnInstall) btnInstall.classList.add('hidden');
-            }
-        }
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            showToast('Aplicativo instalado com sucesso! 🎉');
-        });
 
         // Firebase Cloud Sync setup
         let db = null;
@@ -987,29 +948,82 @@
                 if (videoImages.length === 0) videoImages = rawImages;
 
                 const canvas = document.getElementById('videoCanvas');
+                
+                // 1. RESOLUÇÃO ATUALIZADA: Full HD (1080x1920) para ultrapassar a exigência de 576p da Shopee
+                canvas.width = 1080;
+                canvas.height = 1920;
                 const ctx = canvas.getContext('2d');
                 const placeholder = document.getElementById('videoCanvasPlaceholder');
                 if (placeholder) placeholder.classList.add('hidden');
 
-                const stream = canvas.captureStream(30);
-                let mimeType = 'video/webm';
-                if (MediaRecorder.isTypeSupported('video/mp4')) mimeType = 'video/mp4';
+                // 2. ESPELHANDO OS FRAMES POR SEGUNDO DO SEU VÍDEO (15 FPS)
+                const fps = 15;
+                const canvasStream = canvas.captureStream(fps);
+
+                // 3. O SEGREDO: CRIAR UMA TRILHA DE ÁUDIO SILENCIOSA
+                // Plataformas rejeitam vídeos em que a trilha de áudio não existe. 
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const audioDest = audioCtx.createMediaStreamDestination();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                // Volume zero (mudo)
+                gainNode.gain.value = 0;
+                oscillator.connect(gainNode);
+                gainNode.connect(audioDest);
+                oscillator.start();
+
+                // Pega a trilha de áudio gerada
+                const audioTrack = audioDest.stream.getAudioTracks()[0];
+                
+                // Junta a imagem do Canvas com a trilha de Áudio silenciosa
+                const combinedStream = new MediaStream([canvasStream.getVideoTracks()[0], audioTrack]);
+
+                // 4. FORÇAR FORMATO MP4 H.264 (O padrão ouro da web e apps)
+                const mimeTypes = [
+                    'video/mp4;codecs="avc1.42E01E, mp4a.40.2"', // H.264 + AAC 
+                    'video/mp4;codecs=avc1', // H.264
+                    'video/mp4',
+                    'video/webm;codecs=h264',
+                    'video/webm'
+                ];
+                
+                let selectedMimeType = 'video/webm'; // Fallback
+                for (let type of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        selectedMimeType = type;
+                        break;
+                    }
+                }
 
                 let recorder;
-                try { recorder = new MediaRecorder(stream, { mimeType }); } 
-                catch (e) { recorder = new MediaRecorder(stream); }
+                try { 
+                    // Aumentando o bitrate para 2.5 Mbps para garantir ótima qualidade na resolução Full HD
+                    recorder = new MediaRecorder(combinedStream, { 
+                        mimeType: selectedMimeType,
+                        videoBitsPerSecond: 2500000 
+                    }); 
+                } catch (e) { 
+                    recorder = new MediaRecorder(combinedStream); 
+                }
 
                 let chunks = [];
                 recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
                 recorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
+                    // Desliga o áudio ao terminar para economizar memória
+                    oscillator.stop();
+                    audioCtx.close();
+                    
+                    // Força a assinatura do arquivo final como MP4
+                    const blob = new Blob(chunks, { type: 'video/mp4' });
                     resolve(blob);
                 };
 
                 recorder.start();
 
                 let frameCount = 0;
-                const totalFrames = 600; // 20 segundos a 30 FPS
+                const durationSecs = 15; // Vídeo de 15 segundos
+                const totalFrames = fps * durationSecs; 
                 const framesPerImage = Math.max(1, Math.floor(totalFrames / videoImages.length));
 
                 function animate() {
@@ -1018,31 +1032,33 @@
                         return;
                     }
 
-                    if (onFrameProgress && frameCount % 15 === 0) {
+                    if (onFrameProgress && frameCount % 10 === 0) {
                         onFrameProgress((frameCount / totalFrames) * 100);
                     }
 
                     const currentImgIndex = Math.floor(frameCount / framesPerImage) % videoImages.length;
                     const img = videoImages[currentImgIndex];
 
-                    ctx.fillStyle = '#090d16';
+                    // Fundo 100% Preto
+                    ctx.fillStyle = '#000000';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    const imgFrameProgress = frameCount % framesPerImage;
-                    const scaleProgress = 1 + (imgFrameProgress / framesPerImage) * 0.06;
-
+                    // Centralizar imagem sem distorcer (Letterboxing)
                     const hRatio = canvas.width / img.width;
                     const vRatio = canvas.height / img.height;
-                    const baseRatio = Math.min(hRatio, vRatio) * 0.92;
-                    const ratio = baseRatio * scaleProgress;
+                    const ratio = Math.min(hRatio, vRatio);
 
-                    const centerShift_x = (canvas.width - img.width * ratio) / 2;
-                    const centerShift_y = (canvas.height - img.height * ratio) / 2;
+                    const targetWidth = img.width * ratio;
+                    const targetHeight = img.height * ratio;
+                    const centerShift_x = (canvas.width - targetWidth) / 2;
+                    const centerShift_y = (canvas.height - targetHeight) / 2;
 
-                    ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+                    ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, targetWidth, targetHeight);
 
                     frameCount++;
-                    requestAnimationFrame(animate);
+                    
+                    // Controla a renderização para bater com os 15 FPS
+                    setTimeout(() => requestAnimationFrame(animate), 1000 / fps);
                 }
 
                 animate();
@@ -1143,8 +1159,8 @@
                                     <i class="fas fa-copy"></i> Copiar Legenda
                                 </button>
                                 ${videoUrl ? `
-                                    <a href="${videoUrl}" download="${escapeHtml(item.prodName || 'shopee_video')}.webm" class="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1">
-                                        <i class="fas fa-download"></i> Baixar Vídeo
+                                    <a href="${videoUrl}" download="${escapeHtml(item.prodName || 'shopee_video')}.mp4" class="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1">
+                                        <i class="fas fa-download"></i> Baixar Vídeo (.MP4)
                                     </a>
                                 ` : ''}
                             </div>
@@ -1156,19 +1172,146 @@
                 console.error("Erro ao ler histórico:", err);
             }
         }
+        function renderMediaGroups() {
+            const container = document.getElementById('mediaGroupsContainer');
+            if (!container) return;
 
-        async function deleteHistoryItem(id) {
+            if (mediaGroups.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs italic">Nenhuma imagem carregada.</div>`;
+                return;
+            }
+
+            container.innerHTML = mediaGroups.map((group, index) => `
+                <div class="border border-slate-200 bg-slate-50 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <h4 class="font-bold text-xs sm:text-sm text-slate-800">${escapeHtml(group.title)}</h4>
+                            <p class="text-[11px] text-slate-500">${group.images.length} imagem(ns) selecionada(s) • Duração estimada do vídeo: 20s</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="generateVideoForGroup('${group.id}')" id="btnVideo_${group.id}" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center gap-1.5">
+                                <i class="fas fa-video"></i> Gerar Vídeo (20s)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Previews de imagens -->
+                    <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar py-1">
+                        ${group.images.map(img => `
+                            <div class="w-16 h-16 rounded-lg bg-slate-200 overflow-hidden border border-slate-300 shrink-0">
+                                <img src="${URL.createObjectURL(img)}" class="w-full h-full object-cover">
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Container para Download do Vídeo Gerado -->
+                    <div id="videoContainer_${group.id}" class="hidden pt-2 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs">
+                            <i class="fas fa-check-circle text-base"></i> Vídeo de 20s criado com sucesso!
+                        </div>
+                        <a id="downloadBtn_${group.id}" download="video_produto_${index + 1}.mp4" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg flex items-center gap-1 shadow-xs">
+                            <i class="fas fa-download"></i> Baixar Vídeo (.MP4)
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function generateVideoForGroup(groupId) {
+            const group = mediaGroups.find(g => g.id === groupId);
+            if (!group || group.images.length === 0) return;
+
+            const btn = document.getElementById(`btnVideo_${groupId}`);
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando Vídeo...`;
+                btn.disabled = true;
+            }
+
             try {
-                const db = await openHistoryDB();
-                const tx = db.transaction('media_history', 'readwrite');
-                const store = tx.objectStore('media_history');
-                store.delete(id);
-                tx.oncomplete = () => {
-                    renderHistoryList();
-                    showToast('Item removido do histórico.');
-                };
+                // Carregar imagens para canvas
+                const loadedImages = await Promise.all(group.images.map(file => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.src = URL.createObjectURL(file);
+                    });
+                }));
+
+                // Criar um Canvas de 1080x1920 (Formato 9:16 reels/tiktok)
+                const canvas = document.createElement('canvas');
+                canvas.width = 1080;
+                canvas.height = 1920;
+                const ctx = canvas.getContext('2d');
+
+                const stream = canvas.captureStream(30); // 30 FPS
+                
+                // Priorizar gravação direta em MP4 H.264
+                const mimeTypes = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=h264', 'video/webm'];
+                const mimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'video/webm';
+                
+                const recorder = new MediaRecorder(stream, { mimeType: mimeType });
+                const chunks = [];
+
+                recorder.ondataavailable = e => chunks.push(e.data);
+
+                const durationSecs = 20; // 20 segundos OBRIGATÓRIOS
+                const fps = 30;
+                const totalFrames = durationSecs * fps;
+                const msPerFrame = 1000 / fps;
+
+                recorder.start();
+
+                for (let frame = 0; frame < totalFrames; frame++) {
+                    const progress = frame / totalFrames;
+                    const imgIndex = Math.floor(progress * loadedImages.length) % loadedImages.length;
+                    const img = loadedImages[imgIndex];
+
+                    // Estética como vídeo original: Fundo 100% Preto
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(0, 0, 1080, 1920);
+
+                    // Desenhar Imagem Centralizada perfeita (sem zoom, garantindo bordas pretas adequadas)
+                    const hRatio = 1080 / img.width;
+                    const vRatio = 1920 / img.height;
+                    const ratio = Math.min(hRatio, vRatio);
+
+                    const targetWidth = img.width * ratio;
+                    const targetHeight = img.height * ratio;
+                    const x = (1080 - targetWidth) / 2;
+                    const y = (1920 - targetHeight) / 2;
+
+                    ctx.drawImage(img, x, y, targetWidth, targetHeight);
+
+                    await new Promise(r => setTimeout(r, msPerFrame));
+                }
+
+                recorder.stop();
+
+                await new Promise(resolve => {
+                    recorder.onstop = () => {
+                        // Forçar o download como mp4
+                        const blob = new Blob(chunks, { type: 'video/mp4' });
+                        group.videoUrl = URL.createObjectURL(blob);
+                        
+                        const videoContainer = document.getElementById(`videoContainer_${groupId}`);
+                        const downloadBtn = document.getElementById(`downloadBtn_${groupId}`);
+                        if (videoContainer && downloadBtn) {
+                            downloadBtn.href = group.videoUrl;
+                            videoContainer.classList.remove('hidden');
+                        }
+                        resolve();
+                    };
+                });
+
+                showToast('Vídeo de 20s gerado com sucesso!');
             } catch (err) {
-                console.error("Erro ao deletar item do histórico:", err);
+                console.error("Erro na geração de vídeo:", err);
+                showToast('Falha ao gerar o vídeo.', 'warning');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = `<i class="fas fa-video"></i> Gerar Vídeo (20s)`;
+                    btn.disabled = false;
+                }
             }
         }
 
@@ -2268,4 +2411,4 @@
         });
     </script>
 </body>
-</html>
+</html> agora sim rs preciso dessa versao aqui mais com as atualizações de compatibilidade  com a shopee consegue ? mas tem que manter esse desgin eu colo varias fotos ela ja gera os videos das fotos separadas na aba 3
