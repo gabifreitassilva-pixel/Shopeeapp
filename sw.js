@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shopee-affiliates-v6';
+const CACHE_NAME = 'shopee-affiliates-v4';
 
 // Recursos básicos que queremos salvar no cache do celular/navegador do usuário
 const ASSETS_TO_CACHE = [
