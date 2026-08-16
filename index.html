@@ -459,7 +459,7 @@
                             <div>
                                 <button onclick="generateVideoAndCaption()" class="w-full py-3.5 px-4 bg-gradient-to-r from-purple-700 via-indigo-600 to-orange-500 hover:from-purple-800 hover:to-orange-600 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98">
                                     <i class="fas fa-wand-magic-sparkles text-amber-300 text-base"></i>
-                                    <span>Gerar Legendas e Vídeos (Separados)</span>
+                                    <span>Gerar Legendas e Vídeos (Detecta Múltiplos Produtos)</span>
                                 </button>
                             </div>
 
@@ -509,7 +509,7 @@
                                 <div>
                                     <a id="btnDownloadVideo" download="shopee_video_gabriela.mp4" class="hidden w-full py-3 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-center">
                                         <i class="fas fa-download text-sm"></i>
-                                        <span>Baixar Último Vídeo (.MP4)</span>
+                                        <span>Baixar Vídeo do Produto (.MP4)</span>
                                     </a>
                                     <div id="btnDownloadVideoPlaceholder" class="w-full py-2.5 px-3 bg-slate-200/70 text-slate-500 font-medium text-[11px] rounded-xl text-center border border-slate-200 flex items-center justify-center gap-1.5">
                                         <i class="fas fa-circle-info text-slate-400"></i>
@@ -560,7 +560,7 @@
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-900">Histórico de Mídias e Legendas Salvas</h3>
-                                    <p class="text-[11px] text-slate-500">Acesse, copie nomes, legendas e baixe os vídeos salvos separadamente.</p>
+                                    <p class="text-[11px] text-slate-500">Acesse, copie nomes, legendas e baixe vídeos salvos anteriormente</p>
                                 </div>
                             </div>
                             <button onclick="clearMediaHistory()" class="text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1 transition-colors">
@@ -825,57 +825,65 @@
             return caption;
         }
 
-        // --- MOTOR DE VÍDEOS SHOPEE (1 VÍDEO POR FOTO) ---
         async function generateVideoAndCaption() {
             if (instantImages.length === 0) {
                 showToast('Envie pelo menos 1 foto ou print do produto.', 'warning');
                 return;
             }
 
-            const baseName = document.getElementById('instantProdName').value.trim() || "Produto Shopee";
             const statusBadge = document.getElementById('videoStatusBadge');
-            
             if (statusBadge) {
-                statusBadge.innerText = "Processando Vídeos Separados...";
+                statusBadge.innerText = "Analisando produtos nas fotos...";
                 statusBadge.className = "text-[10px] bg-amber-500/20 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-500/30 animate-pulse";
             }
 
-            showToast(`🚀 Gerando ${instantImages.length} vídeo(s) (Um para cada imagem)...`);
+            updateProgressBar(10, 'Analisando produto(s) e extraindo dados...');
 
-            for (let i = 0; i < instantImages.length; i++) {
-                const img = instantImages[i];
-                const itemName = instantImages.length > 1 ? `${baseName} (Opção ${i+1})` : baseName;
-                const itemCaption = generateDefaultCaption(itemName);
-                
+            const productGroups = await analyzeAndSeparateProducts();
+
+            if (productGroups.length === 0) {
+                showToast('Nenhum produto identificado nas imagens.', 'warning');
+                updateProgressBar(-1);
+                return;
+            }
+
+            showToast(`🚀 ${productGroups.length} produto(s) identificado(s)! Gerando vídeos e legendas...`);
+
+            for (let idx = 0; idx < productGroups.length; idx++) {
+                const group = productGroups[idx];
+                const baseProgress = 20 + Math.round((idx / productGroups.length) * 75);
+
+                if (statusBadge) {
+                    statusBadge.innerText = `Gerando Vídeo ${idx + 1}/${productGroups.length} (20s)...`;
+                }
+
+                updateProgressBar(baseProgress, `Gerando Vídeo ${idx + 1} de ${productGroups.length}...`);
+
                 const prodInput = document.getElementById('instantProdName');
                 const captionOutput = document.getElementById('instantCaptionOutput');
-                if (prodInput) prodInput.value = itemName;
-                if (captionOutput) captionOutput.value = itemCaption;
+                if (prodInput) prodInput.value = group.productName;
+                if (captionOutput) captionOutput.value = group.caption;
 
-                const baseProgress = Math.round((i / instantImages.length) * 100);
-                updateProgressBar(baseProgress, `Vídeo ${i + 1}/${instantImages.length}: MP4 (20s)...`);
-                
-                const videoBlob = await renderShopeeCompatibleVideo(img, (frameProgress) => {
-                    const overall = baseProgress + Math.round((frameProgress / 100) * (100 / instantImages.length));
-                    updateProgressBar(overall, `Renderizando Vídeo ${i + 1}/${instantImages.length} (${Math.round(frameProgress)}%)...`);
+                const videoBlob = await renderInstantVideoForImages(group.images, (frameProgress) => {
+                    const currentProgress = baseProgress + Math.round((frameProgress / 100) * (75 / productGroups.length));
+                    updateProgressBar(currentProgress, `Renderizando Vídeo ${idx + 1}/${productGroups.length} (${Math.round(frameProgress)}%)...`);
                 });
+                currentVideoBlob = videoBlob;
 
-                currentVideoBlob = videoBlob; 
-                await autoSaveProductToHistory(itemName, itemCaption, videoBlob);
+                await autoSaveProductToHistory(group.productName, group.caption, videoBlob);
             }
 
             updateProgressBar(100, 'Processamento concluído com sucesso!');
             setTimeout(() => updateProgressBar(-1), 2500);
 
             if (statusBadge) {
-                statusBadge.innerText = `Concluído (${instantImages.length} Vídeos)!`;
+                statusBadge.innerText = `Concluído (${productGroups.length} Vídeos)!`;
                 statusBadge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30";
             }
 
             const btnDownload = document.getElementById('btnDownloadVideo');
             const btnSaveHistory = document.getElementById('btnSaveToHistory');
             const btnPlaceholder = document.getElementById('btnDownloadVideoPlaceholder');
-            
             if (btnDownload && currentVideoBlob) {
                 btnDownload.href = URL.createObjectURL(currentVideoBlob);
                 btnDownload.classList.remove('hidden');
@@ -884,53 +892,156 @@
             if (btnSaveHistory) btnSaveHistory.classList.remove('hidden');
 
             renderHistoryList();
-            showToast(`✅ Sucesso! ${instantImages.length} vídeo(s) gerados separadamente e salvos no histórico!`);
+            showToast(`✅ Sucesso! ${productGroups.length} produto(s) processado(s) e salvos no histórico abaixo!`);
         }
 
-        function renderShopeeCompatibleVideo(img, onFrameProgress) {
+        async function analyzeAndSeparateProducts() {
+            try {
+                const imageParts = instantImages.map(img => ({
+                    inlineData: {
+                        mimeType: "image/png",
+                        data: getImageBase64(img)
+                    }
+                }));
+
+                const systemPrompt = "Você é um assistente especialista da Shopee. Sua tarefa é ANALISAR E AGRUPAR as imagens por PRODUTO DISTINTO. Se houver 3 ou 4 fotos do MESMO produto, junta TODAS as fotos desse mesmo produto em um ÚNICO grupo no campo 'imageIndices'. REGRA OBRIGATÓRIA: Se uma das imagens for um PRINT/SCREENSHOT com o nome ou preço do produto, use essa imagem APENAS para identificar o 'productName' e 'caption'. NUNCA inclua o índice dessa imagem de print no campo 'imageIndices'. O 'imageIndices' deve conter EXCLUSIVAMENTE as fotos limpas do produto para o vídeo.\nPara cada produto individual, forneça o productName exato e uma caption de no máximo 150 caracteres incluindo 3 a 4 hashtags específicas do nicho do produto.\nResponda EXCLUSIVAMENTE em formato JSON: { \"products\": [ { \"imageIndices\": [0, 1, 2], \"productName\": \"...\", \"caption\": \"...\" } ] }";
+                const userQuery = "Analise e agrupe rigorosamente TODAS as fotos que pertencem ao mesmo produto no mesmo grupo.";
+
+                const apiKey = ""; // <--- AVISO: Insira sua API Key do Gemini aqui se quiser habilitar a IA
+                if (!apiKey) {
+                    throw new Error("API Key não configurada");
+                }
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [{ text: userQuery }, ...imageParts]
+                    }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { responseMimeType: "application/json" }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (jsonText) {
+                        const parsed = JSON.parse(jsonText);
+                        if (parsed.products && Array.isArray(parsed.products) && parsed.products.length > 0) {
+                            return parsed.products.map(p => {
+                                const groupImgs = (p.imageIndices || [])
+                                    .map(idx => instantImages[idx])
+                                    .filter(img => img !== undefined);
+                                return {
+                                    productName: p.productName || "Produto Shopee",
+                                    caption: (p.caption && p.caption.length > 150) ? p.caption.substring(0, 147) + '...' : (p.caption || generateDefaultCaption(p.productName)),
+                                    images: groupImgs.length > 0 ? groupImgs : [instantImages[0]]
+                                };
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao analisar múltiplos produtos via IA (Fallback ativado):", err);
+            }
+
+            // Fallback: Se a API falhar ou não estiver configurada, junta todas as fotos em 1 único vídeo de 1 produto.
+            const fallbackName = document.getElementById('instantProdName')?.value?.trim() || "Produto Shopee";
+            
+            return [{
+                productName: fallbackName.includes("Analisando") ? "Produto Shopee" : fallbackName,
+                caption: generateDefaultCaption(fallbackName),
+                images: instantImages
+            }];
+        }
+
+        function renderInstantVideoForImages(groupImages, onFrameProgress) {
             return new Promise((resolve) => {
+                let rawImages = (groupImages && groupImages.length > 0) ? groupImages : instantImages;
+                
+                // Filtra automaticamente capturas de tela/prints (ex: banners horizontais e prints com proporção > 1.35)
+                let videoImages = rawImages.filter(img => {
+                    const w = img.naturalWidth || img.width || 1;
+                    const h = img.naturalHeight || img.height || 1;
+                    return (w / h) < 1.35;
+                });
+
+                if (videoImages.length === 0) videoImages = rawImages;
+
                 const canvas = document.getElementById('videoCanvas');
+                
+                // 1. RESOLUÇÃO ATUALIZADA: Full HD (1080x1920) para ultrapassar a exigência de 576p da Shopee
                 canvas.width = 1080;
                 canvas.height = 1920;
                 const ctx = canvas.getContext('2d');
                 const placeholder = document.getElementById('videoCanvasPlaceholder');
                 if (placeholder) placeholder.classList.add('hidden');
 
-                const fps = 30;
-                const durationSecs = 20; 
-                const totalFrames = fps * durationSecs;
+                // 2. ESPELHANDO OS FRAMES POR SEGUNDO DO SEU VÍDEO (15 FPS)
+                const fps = 15;
                 const canvasStream = canvas.captureStream(fps);
 
-                // Criar Trilha de Áudio Silenciosa (Evita recusa da Shopee)
+                // 3. O SEGREDO: CRIAR UMA TRILHA DE ÁUDIO SILENCIOSA
+                // Plataformas rejeitam vídeos em que a trilha de áudio não existe. 
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioDest = audioCtx.createMediaStreamDestination();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                gainNode.gain.value = 0; 
+                
+                // Volume zero (mudo)
+                gainNode.gain.value = 0;
                 oscillator.connect(gainNode);
                 gainNode.connect(audioDest);
                 oscillator.start();
-                
+
+                // Pega a trilha de áudio gerada
                 const audioTrack = audioDest.stream.getAudioTracks()[0];
+                
+                // Junta a imagem do Canvas com a trilha de Áudio silenciosa
                 const combinedStream = new MediaStream([canvasStream.getVideoTracks()[0], audioTrack]);
 
-                const mimeTypes = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=h264', 'video/webm'];
-                let selectedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'video/webm';
+                // 4. FORÇAR FORMATO MP4 H.264 (O padrão ouro da web e apps)
+                const mimeTypes = [
+                    'video/mp4;codecs="avc1.42E01E, mp4a.40.2"', // H.264 + AAC 
+                    'video/mp4;codecs=avc1', // H.264
+                    'video/mp4',
+                    'video/webm;codecs=h264',
+                    'video/webm'
+                ];
+                
+                let selectedMimeType = 'video/webm'; // Fallback
+                for (let type of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        selectedMimeType = type;
+                        break;
+                    }
+                }
 
                 let recorder;
-                try {
+                try { 
+                    // Aumentando o bitrate para 2.5 Mbps para garantir ótima qualidade na resolução Full HD
                     recorder = new MediaRecorder(combinedStream, { 
                         mimeType: selectedMimeType,
-                        videoBitsPerSecond: 3000000 
-                    });
-                } catch(e) { recorder = new MediaRecorder(combinedStream); }
+                        videoBitsPerSecond: 2500000 
+                    }); 
+                } catch (e) { 
+                    recorder = new MediaRecorder(combinedStream); 
+                }
 
                 let chunks = [];
                 recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-                
                 recorder.onstop = () => {
+                    // Desliga o áudio ao terminar para economizar memória
                     oscillator.stop();
                     audioCtx.close();
+                    
+                    // Força a assinatura do arquivo final como MP4
                     const blob = new Blob(chunks, { type: 'video/mp4' });
                     resolve(blob);
                 };
@@ -938,35 +1049,45 @@
                 recorder.start();
 
                 let frameCount = 0;
+                const durationSecs = 15; // Vídeo de 15 segundos
+                const totalFrames = fps * durationSecs; 
+                const framesPerImage = Math.max(1, Math.floor(totalFrames / videoImages.length));
+
                 function animate() {
                     if (frameCount >= totalFrames) {
                         recorder.stop();
                         return;
                     }
-                    if (frameCount % 30 === 0 && onFrameProgress) {
+
+                    if (onFrameProgress && frameCount % 10 === 0) {
                         onFrameProgress((frameCount / totalFrames) * 100);
                     }
 
-                    ctx.fillStyle = '#050505'; 
+                    const currentImgIndex = Math.floor(frameCount / framesPerImage) % videoImages.length;
+                    const img = videoImages[currentImgIndex];
+
+                    // Fundo 100% Preto
+                    ctx.fillStyle = '#000000';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                    // Centralizar imagem sem distorcer (Letterboxing)
                     const hRatio = canvas.width / img.width;
                     const vRatio = canvas.height / img.height;
-                    const baseRatio = Math.min(hRatio, vRatio);
-                    
-                    const zoomLevel = 1.0 + ((frameCount / totalFrames) * 0.05); // Efeito Ken Burns bem sutil
-                    const ratio = baseRatio * zoomLevel;
+                    const ratio = Math.min(hRatio, vRatio);
 
-                    const tw = img.width * ratio;
-                    const th = img.height * ratio;
-                    const cx = (canvas.width - tw) / 2;
-                    const cy = (canvas.height - th) / 2;
+                    const targetWidth = img.width * ratio;
+                    const targetHeight = img.height * ratio;
+                    const centerShift_x = (canvas.width - targetWidth) / 2;
+                    const centerShift_y = (canvas.height - targetHeight) / 2;
 
-                    ctx.drawImage(img, 0, 0, img.width, img.height, cx, cy, tw, th);
+                    ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, targetWidth, targetHeight);
 
                     frameCount++;
+                    
+                    // Controla a renderização para bater com os 15 FPS
                     setTimeout(() => requestAnimationFrame(animate), 1000 / fps);
                 }
+
                 animate();
             });
         }
@@ -1001,7 +1122,7 @@
 
                 store.put(historyItem);
             } catch (err) {
-                console.error("Erro ao salvar produto no histórico:", err);
+                console.error("Erro ao salvar produto automaticamente no histórico:", err);
             }
         }
 
