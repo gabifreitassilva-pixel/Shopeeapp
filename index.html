@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Vídeos - Achadinhos 360</title>
+    
+    <!-- Conectando o App e o Ícone -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#f97316">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -101,6 +108,15 @@
     </div>
 
     <script>
+        // Registrando o Service Worker para permitir a instalação no celular
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('App Registrado com Sucesso!', reg))
+                    .catch(err => console.log('Erro ao registrar App:', err));
+            });
+        }
+
         // Sistema de Banco de Dados Local (LocalStorage)
         let linksDoTelegram = {}; 
         let bancoDePostagens = []; // Armazena todas as postagens salvas
