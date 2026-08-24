@@ -1,4 +1,4 @@
-const CACHE_NAME = 'achadinhos-v1';
+const CACHE_NAME = 'achadinhos-v2';
 const assets = [
   './gerador-posts.html',
   './manifest.json',
