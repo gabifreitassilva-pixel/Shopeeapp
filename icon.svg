@@ -1,0 +1,10 @@
+<!-- Alça da Sacola -->
+<path d="M176 200 V150 A80 80 0 0 1 336 150 V200" fill="none" stroke="white" stroke-width="36" stroke-linecap="round"/>
+
+<!-- Corpo da Sacola Branca -->
+<path d="M126 200 H386 V410 A30 30 0 0 1 356 440 H156 A30 30 0 0 1 126 410 V200 Z" fill="white"/>
+
+<!-- Logo do Instagram na Sacola -->
+<rect x="206" y="260" width="100" height="100" rx="25" fill="none" stroke="url(#ig-gradient)" stroke-width="12"/>
+<circle cx="256" cy="310" r="22" fill="none" stroke="url(#ig-gradient)" stroke-width="12"/>
+<circle cx="288" cy="282" r="6" fill="url(#ig-gradient)"/>
