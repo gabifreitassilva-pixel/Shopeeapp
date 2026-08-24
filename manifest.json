@@ -1,17 +1,5 @@
-{
 "name": "Achadinhos 360",
 "short_name": "Achadinhos",
 "description": "Painel de controle para vídeos de afiliados",
-"start_url": "./gerador-posts.html",
+"start_url": "./index.html",
 "display": "standalone",
-"background_color": "#f8fafc",
-"theme_color": "#f97316",
-"icons": [
-{
-"src": "icon.svg",
-"sizes": "192x192 512x512",
-"type": "image/svg+xml",
-"purpose": "any maskable"
-}
-]
-}
